@@ -1,7 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  // მიუთითებს, სად ეძებოს კლასები
-  content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
+  // დარწმუნდი, რომ src/components და app ზუსტად ასე გიწერია
+  content: [
+    "./app/**/*.{js,jsx,ts,tsx}",
+    "./src/components/**/*.{js,jsx,ts,tsx}"
+  ],
   presets: [require("nativewind/preset")],
   theme: {
     extend: {},
