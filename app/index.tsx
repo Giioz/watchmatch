@@ -222,6 +222,20 @@ export default function IndexScreen() {
                     Join Existing Room
                   </Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => router.push('/auth' as any)}
+                  style={{
+                    alignItems: 'center',
+                    paddingVertical: 8,
+                    marginTop: 4,
+                  }}
+                >
+                  <Text style={{ color: '#a78bfa', fontSize: 13, fontWeight: '500', letterSpacing: 0.2 }}>
+                    Sign In or Create Account
+                  </Text>
+                </TouchableOpacity>
               </View>
             ) : (
               <Animated.View style={{
