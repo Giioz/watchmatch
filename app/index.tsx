@@ -294,16 +294,7 @@ export default function IndexScreen() {
           </Animated.View>
 
           {/* Footer */}
-          <View style={{
-            flexDirection: 'row', alignItems: 'center',
-            paddingHorizontal: 32, paddingBottom: 28, paddingTop: 20, gap: 12,
-          }}>
-            <View style={{ flex: 1, height: 1, backgroundColor: '#1c1c22' }} />
-            <Text style={{ fontSize: 10, color: '#3f3f46', letterSpacing: 1.5, textTransform: 'uppercase' }}>
-              No account needed
-            </Text>
-            <View style={{ flex: 1, height: 1, backgroundColor: '#1c1c22' }} />
-          </View>
+          
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     </SafeAreaView>

@@ -380,7 +380,7 @@ export default function AuthScreen() {
           {/* Decorative Divider Footer */}
           <View style={styles.footer}>
             <View style={styles.divider} />
-            <Text style={styles.footerText}>Secure authentication</Text>
+            <Text style={styles.footerText}>You Say Sometimes Whaat</Text>
             <View style={styles.divider} />
           </View>
         </KeyboardAvoidingView>
