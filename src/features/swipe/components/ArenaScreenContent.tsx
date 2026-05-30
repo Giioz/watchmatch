@@ -85,7 +85,7 @@ export default function ArenaScreenContent() {
                 onSwipeLeft={handleSwipeLeft}
                 onSwipeRight={handleSwipeRight}
                 onDetailsOpen={openDetails}
-                topCardX={isTop ? undefined : topCardX}
+                topCardX={topCardX}
               />
             );
           })

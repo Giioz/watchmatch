@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, Animated, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { TMDBMediaItem } from '@/types/movie';
 
 import { useHomeMovies } from '../hooks/useHomeMovies';
 import { useHomeAnimations } from '../hooks/useHomeAnimations'; // 🎯 ახალი ჰუკი
@@ -14,7 +15,7 @@ export default function HomeScreenContent() {
   const router = useRouter();
   const { trendingMovies, loadingMovies } = useHomeMovies(3);
   
-  const [selectedMovie, setSelectedMovie] = useState<any>(null);
+  const [selectedMovie, setSelectedMovie] = useState<TMDBMediaItem | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const { headerAnim, cardsAnim, actionsAnim, orb1Style, orb2Style } = useHomeAnimations();

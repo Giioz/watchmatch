@@ -10,12 +10,13 @@ import {
   Animated,
   TouchableWithoutFeedback,
 } from 'react-native';
+import { TMDBMediaItem } from '@/types/movie';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface BottomSheetProps {
   visible: boolean;
-  movie: any;
+  movie: TMDBMediaItem | null;
   onClose: () => void;
 }
 
@@ -99,7 +100,7 @@ export default function HomeMovieBottomSheet({ visible, movie, onClose }: Bottom
                   <View style={{ backgroundColor: 'rgba(245,158,11,0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
                     <Text style={{ fontSize: 13, color: '#f59e0b', fontWeight: '700' }}>⭐ {movie.vote_average.toFixed(1)}</Text>
                   </View>
-                  <Text style={{ fontSize: 11, color: '#4a4a5a' }}>TMDb: {Math.round(movie.popularity)}</Text>
+                  <Text style={{ fontSize: 11, color: '#4a4a5a' }}>TMDb: {Math.round(movie.popularity ?? 0)}</Text>
                 </View>
               </View>
             </View>

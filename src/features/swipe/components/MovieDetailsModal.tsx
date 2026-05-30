@@ -9,13 +9,13 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { Movie } from "./SwipeCard";
+import { TMDBMediaItem } from "@/types/movie";
 
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w780";
 
 interface MovieDetailsModalProps {
   visible: boolean;
-  movie: Movie | null;
+  movie: TMDBMediaItem | null;
   onClose: () => void;
 }
 

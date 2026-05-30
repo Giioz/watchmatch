@@ -1,15 +1,18 @@
+import { RoomState } from '@/types/room';
+import { MatchDetails, SwipePayload } from '@/types/swipe';
+
 /**
  * Supabase Data Source Provider Boundaries
  */
 export interface SupabaseService {
   rooms: {
-    create: (payload: any) => Promise<any>;
-    subscribe: (code: string, callback: (payload: any) => void) => () => void;
-    update: (code: string, updates: any) => Promise<any>;
+    create: (payload: RoomState) => Promise<RoomState>;
+    subscribe: (code: string, callback: (payload: RoomState) => void) => () => void;
+    update: (code: string, updates: Partial<RoomState>) => Promise<RoomState>;
   };
   swipes: {
-    record: (payload: any) => Promise<any>;
-    onMatch: (callback: (match: any) => void) => () => void;
+    record: (payload: SwipePayload) => Promise<SwipePayload>;
+    onMatch: (callback: (match: MatchDetails) => void) => () => void;
   };
 }
 

@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { TMDBMediaItem } from '@/types/movie';
 
 interface MovieFilmStripProps {
   loading: boolean;
-  movies: any[];
-  onSelectMovie: (movie: any) => void;
+  movies: TMDBMediaItem[];
+  onSelectMovie: (movie: TMDBMediaItem) => void;
 }
 
 export default function MovieFilmStrip({ loading, movies, onSelectMovie }: MovieFilmStripProps) {

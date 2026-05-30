@@ -1,4 +1,4 @@
-import { Movie } from "@/features/swipe/components/SwipeCard";
+import { TMDBMediaItem } from "@/types/movie";
 import { movieService } from "@/src/services/tmdbApi";
 import { useCallback, useEffect, useState } from "react";
 import { useSharedValue } from "react-native-reanimated";
@@ -6,7 +6,7 @@ import { useSharedValue } from "react-native-reanimated";
 const PREFETCH_THRESHOLD = 5;
 const getRandomPageNumber = () => Math.floor(Math.random() * 400) + 1;
 
-const shuffleArray = (array: any[]) => {
+const shuffleArray = (array: TMDBMediaItem[]) => {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -16,14 +16,14 @@ const shuffleArray = (array: any[]) => {
 };
 
 export function useArena() {
-  const [movies, setMovies] = useState<Movie[]>([]);
+  const [movies, setMovies] = useState<TMDBMediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [likedCount, setLikedCount] = useState(0);
   const [swipedCount, setSwipedCount] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [selectedMovie, setSelectedMovie] = useState<TMDBMediaItem | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const topCardX = useSharedValue(0);
@@ -87,7 +87,7 @@ export function useArena() {
     setCurrentIndex(0);
   }, [loadMovies]);
 
-  const openDetails = useCallback((movie: Movie) => {
+  const openDetails = useCallback((movie: TMDBMediaItem) => {
     setSelectedMovie(movie);
     setIsModalVisible(true);
   }, []);
