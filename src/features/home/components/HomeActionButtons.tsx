@@ -6,9 +6,15 @@ interface HomeActionButtonsProps {
   onCreateRoom: () => void;
   onJoinRoom: (code: string) => void;
   onSignIn: () => void;
+  showAuthPrompt: boolean;
 }
 
-export default function HomeActionButtons({ onCreateRoom, onJoinRoom, onSignIn }: HomeActionButtonsProps) {
+export default function HomeActionButtons({
+  onCreateRoom,
+  onJoinRoom,
+  onSignIn,
+  showAuthPrompt,
+}: HomeActionButtonsProps) {
   const [isJoining, setIsJoining] = useState(false);
   const [roomCode, setRoomCode] = useState('');
   const joinAnim = useRef(new Animated.Value(0)).current;
@@ -38,9 +44,11 @@ export default function HomeActionButtons({ onCreateRoom, onJoinRoom, onSignIn }
             <Text style={{ color: '#a1a1aa', fontSize: 15 }}>Join Existing Room</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity activeOpacity={0.7} onPress={onSignIn} style={{ alignItems: 'center', paddingVertical: 8, marginTop: 4 }}>
-            <Text style={{ color: '#a78bfa', fontSize: 13, fontWeight: '500' }}>Sign In or Create Account</Text>
-          </TouchableOpacity>
+          {showAuthPrompt && (
+            <TouchableOpacity activeOpacity={0.7} onPress={onSignIn} style={{ alignItems: 'center', paddingVertical: 8, marginTop: 4 }}>
+              <Text style={{ color: '#a78bfa', fontSize: 13, fontWeight: '500' }}>Sign In or Create Account</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <Animated.View style={{ gap: 12, opacity: joinAnim, transform: [{ translateY: joinAnim.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }] }}>

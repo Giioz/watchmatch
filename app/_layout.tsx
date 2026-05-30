@@ -32,6 +32,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="auth" />
+        <Stack.Screen name="profile" />
         <Stack.Screen name="create-room" />
         <Stack.Screen name="room/[code]" />
         <Stack.Screen name="arena" />

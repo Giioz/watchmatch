@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, Touchable
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TMDBMediaItem } from '@/types/movie';
+import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 
 import { useHomeMovies } from '../hooks/useHomeMovies';
 import { useHomeAnimations } from '../hooks/useHomeAnimations'; // 🎯 ახალი ჰუკი
@@ -10,10 +11,12 @@ import { useHomeAnimations } from '../hooks/useHomeAnimations'; // 🎯 ახ�
 import MovieFilmStrip from './MovieFilmStrip';
 import HomeActionButtons from './HomeActionButtons';
 import HomeMovieBottomSheet from './HomeMovieBottomSheet';
+import HomeProfileButton from './HomeProfileButton';
 
 export default function HomeScreenContent() {
   const router = useRouter();
   const { trendingMovies, loadingMovies } = useHomeMovies(3);
+  const { user, loading: loadingAuth } = useAuthSession();
   
   const [selectedMovie, setSelectedMovie] = useState<TMDBMediaItem | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -39,6 +42,13 @@ export default function HomeScreenContent() {
             <Text style={styles.subTagline}>Swipe. Match. Watch together.</Text>
           </Animated.View>
 
+          {user && (
+            <HomeProfileButton
+              user={user}
+              onPress={() => router.push('/profile')}
+            />
+          )}
+
           {/* Dev Shortcut */}
           <TouchableOpacity onPress={() => router.push('/arena')} style={styles.devBadge}>
             <Text style={{ color: '#71717a', fontSize: 11, letterSpacing: 1 }}>DEV: Arena</Text>
@@ -62,6 +72,7 @@ export default function HomeScreenContent() {
               onCreateRoom={() => router.push('/create-room')}
               onSignIn={() => router.push('/auth')}
               onJoinRoom={(code) => router.push(`/room/${code}`)}
+              showAuthPrompt={!loadingAuth && !user}
             />
           </Animated.View>
 
@@ -84,5 +95,5 @@ const styles = StyleSheet.create({
   topTagline: { fontSize: 11, letterSpacing: 3.5, textTransform: 'uppercase', color: '#7c3aed', fontWeight: '500', marginBottom: 14 },
   mainTitle: { fontSize: 52, fontWeight: '300', color: '#f1f0f8', lineHeight: 52, letterSpacing: -1 },
   subTagline: { marginTop: 12, fontSize: 13, color: '#52525b', fontWeight: '300', letterSpacing: 0.4 },
-  devBadge: { position: 'absolute', top: 60, right: 24, backgroundColor: '#27272a', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, zIndex: 10 },
+  devBadge: { position: 'absolute', top: 108, right: 24, backgroundColor: '#27272a', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, zIndex: 10 },
 });
