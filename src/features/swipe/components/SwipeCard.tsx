@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, Image, Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -37,16 +37,46 @@ interface SwipeCardProps {
   movie: Movie;
   onSwipeLeft:  (movie: Movie) => void;
   onSwipeRight: (movie: Movie) => void;
+  onDetailsOpen: (movie: Movie) => void;
   isTop:  boolean;
   index:  number;
-  // top card passes its translateX down so back cards can react
   topCardX?: SharedValue<number>;
 }
+
+// ჰელპერ ფუნქცია დინამიკური რეიტინგის ვიზუალისთვის
+const getRatingTheme = (rating: number) => {
+  if (rating >= 7.5) {
+    return {
+      bg: 'rgba(139, 92, 246, 0.15)',      // პრემიუმ იასამნისფერი
+      border: 'rgba(139, 92, 246, 0.35)',
+      text: '#c4b5fd',
+    };
+  } else if (rating >= 6.5) {
+    return {
+      bg: 'rgba(34, 197, 94, 0.12)',       // ნაის მწვანე
+      border: 'rgba(34, 197, 94, 0.3)',
+      text: '#4ade80',
+    };
+  } else if (rating >= 5.0) {
+    return {
+      bg: 'rgba(245, 158, 11, 0.12)',      // თბილი ნარინჯისფერი
+      border: 'rgba(245, 158, 11, 0.3)',
+      text: '#fbbf24',
+    };
+  } else {
+    return {
+      bg: 'rgba(239, 68, 68, 0.12)',       // კრიტიკული წითელი
+      border: 'rgba(239, 68, 68, 0.3)',
+      text: '#f87171',
+    };
+  }
+};
 
 export default function SwipeCard({
   movie,
   onSwipeLeft,
   onSwipeRight,
+  onDetailsOpen,
   isTop,
   index,
   topCardX,
@@ -58,6 +88,9 @@ export default function SwipeCard({
   const year      = (movie.release_date ?? movie.first_air_date ?? '').slice(0, 4);
   const rating    = movie.vote_average.toFixed(1);
   const posterUri = movie.poster_path ? `${IMAGE_BASE_URL}${movie.poster_path}` : null;
+
+  // თემის ობიექტი მიმდინარე რეიტინგისთვის
+  const ratingTheme = getRatingTheme(movie.vote_average);
 
   const pan = Gesture.Pan()
     .minDistance(2)
@@ -85,11 +118,16 @@ export default function SwipeCard({
       }
     });
 
-  // The X source that drives back-card animation:
-  // top card uses its own translateX, back cards use topCardX prop
+  const singleTap = Gesture.Tap()
+    .onEnd(() => {
+      if (isTop) {
+        runOnJS(onDetailsOpen)(movie);
+      }
+    });
+
+  const composedGesture = Gesture.Race(pan, singleTap);
   const drivingX = isTop ? translateX : (topCardX ?? translateX);
 
-  // Progress 0→1 as top card is dragged to threshold
   const swipeProgress = useDerivedValue(() =>
     interpolate(
       Math.abs(drivingX.value),
@@ -102,7 +140,6 @@ export default function SwipeCard({
   const animatedCardStyle = useAnimatedStyle(() => {
     const progress = swipeProgress.value;
 
-    // Back cards: scale up and rise as top card is dragged
     const baseScale    = interpolate(index, [0, 1, 2], [1,    0.94,  0.88],  Extrapolate.CLAMP);
     const targetScale  = interpolate(index, [0, 1, 2], [1,    0.97,  0.94],  Extrapolate.CLAMP);
     const scale        = isTop ? 1 : baseScale + (targetScale - baseScale) * progress;
@@ -148,8 +185,6 @@ export default function SwipeCard({
 
   const cardContent = (
     <Animated.View style={[styles.card, animatedCardStyle]}>
-
-      {/* Full-bleed poster */}
       {posterUri ? (
         <Image source={{ uri: posterUri }} style={styles.poster} resizeMode="cover" />
       ) : (
@@ -158,26 +193,31 @@ export default function SwipeCard({
         </View>
       )}
 
-      {/* Dark gradient scrim over bottom of poster */}
       <View style={styles.scrim} pointerEvents="none" />
 
-      {/* Info pill — iOS lock-screen style, sits over the bottom of the image */}
-      <View style={styles.infoContainer}>
-        {/* Rating badge */}
-        <View style={styles.ratingBadge}>
-          <Text style={styles.ratingText}>★ {rating}</Text>
+      <TouchableOpacity 
+        activeOpacity={0.9} 
+        onPress={() => isTop && onDetailsOpen(movie)}
+        style={styles.infoContainer}
+      >
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          {/* დინამიკური სტილები პირდაპირ ჰელპერიდან ჯდება */}
+          <View style={[
+            styles.ratingBadge, 
+            { backgroundColor: ratingTheme.bg, borderColor: ratingTheme.border }
+          ]}>
+            <Text style={[styles.ratingText, { color: ratingTheme.text }]}>★ {rating}</Text>
+          </View>
         </View>
 
         <Text numberOfLines={1} style={styles.title}>{title}</Text>
 
-        {year ? (
-          <Text style={styles.year}>{year}</Text>
-        ) : null}
+        {year ? <Text style={styles.year}>{year}</Text> : null}
 
         <Text numberOfLines={2} style={styles.overview}>
           {movie.overview || 'No description available.'}
         </Text>
-      </View>
+      </TouchableOpacity>
 
       {/* LIKE */}
       <Animated.View pointerEvents="none" style={[styles.stamp, styles.stampLeft, likeStyle]}>
@@ -188,22 +228,18 @@ export default function SwipeCard({
       <Animated.View pointerEvents="none" style={[styles.stamp, styles.stampRight, nopeStyle]}>
         <Text style={[styles.stampText, { color: '#f87171' }]}>NOPE</Text>
       </Animated.View>
-
     </Animated.View>
   );
 
   if (isTop) {
-    return <GestureDetector gesture={pan}>{cardContent}</GestureDetector>;
+    return <GestureDetector gesture={composedGesture}>{cardContent}</GestureDetector>;
   }
   return cardContent;
 }
 
-// expose translateX so arena.tsx can pass it to back cards
 export function useSwipeCardX() {
   return useSharedValue(0);
 }
-
-const CARD_HEIGHT = SCREEN_HEIGHT * 0.72;
 
 const styles = StyleSheet.create({
   card: {
@@ -213,7 +249,6 @@ const styles = StyleSheet.create({
     borderRadius:    28,
     backgroundColor: '#111114',
     overflow:        'hidden',
-    // iOS-style shadow
     shadowColor:     '#000',
     shadowOpacity:   0.45,
     shadowRadius:    24,
@@ -232,15 +267,12 @@ const styles = StyleSheet.create({
     alignItems:      'center',
     justifyContent:  'center',
   },
-  // multi-stop scrim: transparent → dark, covers bottom 55%
   scrim: {
     position:        'absolute',
     bottom:          0,
     left:            0,
     right:           0,
     height:          '60%',
-    // React Native doesn't support multi-stop gradients without expo-linear-gradient,
-    // so we layer two Views to fake the effect
     backgroundColor: 'transparent',
   },
   infoContainer: {
@@ -250,22 +282,17 @@ const styles = StyleSheet.create({
     right:          0,
     paddingHorizontal: 22,
     paddingBottom:  28,
-    paddingTop:     80,
-    // frosted dark panel
-    backgroundColor: 'rgba(10,10,15,0.72)',
+    paddingTop:     40,
+    backgroundColor: 'rgba(10,10,15,0.82)',
   },
   ratingBadge: {
     alignSelf:       'flex-start',
-    backgroundColor: 'rgba(167,139,250,0.18)',
     borderWidth:     1,
-    borderColor:     'rgba(167,139,250,0.35)',
     borderRadius:    20,
     paddingHorizontal: 10,
     paddingVertical: 3,
-    marginBottom:    10,
   },
   ratingText: {
-    color:       '#c4b5fd',
     fontSize:    12,
     fontWeight:  '600',
     letterSpacing: 0.5,
