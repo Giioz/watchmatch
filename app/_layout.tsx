@@ -34,9 +34,6 @@ export default function RootLayout() {
         <Stack.Screen name="auth" />
         <Stack.Screen name="profile" />
         <Stack.Screen name="create-room" />
-        <Stack.Screen name="waiting-room" />
-        <Stack.Screen name="join-room" />
-        <Stack.Screen name="room-joined" />
         <Stack.Screen name="room/[code]" />
         <Stack.Screen name="arena" />
         <Stack.Screen name="match" options={{ presentation: 'transparentModal' }} />

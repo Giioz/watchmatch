@@ -5,41 +5,36 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { roomService } from '@/services/roomService';
+import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 
 const GENRES = [
-  { id: 1, name: 'Action' },
-  { id: 2, name: 'Comedy' },
-  { id: 3, name: 'Drama' },
-  { id: 4, name: 'Horror' },
-  { id: 5, name: 'Sci-Fi' },
-  { id: 6, name: 'Romance' },
-  { id: 7, name: 'Thriller' },
-  { id: 8, name: 'Animation' },
-  { id: 9, name: 'Mystery' },
-  { id: 10, name: 'Documentary' },
-  { id: 11, name: 'Fantasy' },
-  { id: 12, name: 'Crime' },
+  { id: 28, name: 'Action' },
+  { id: 35, name: 'Comedy' },
+  { id: 18, name: 'Drama' },
+  { id: 27, name: 'Horror' },
+  { id: 878, name: 'Sci-Fi' },
+  { id: 10749, name: 'Romance' },
+  { id: 53, name: 'Thriller' },
+  { id: 16, name: 'Animation' },
+  { id: 9648, name: 'Mystery' },
+  { id: 99, name: 'Documentary' },
+  { id: 14, name: 'Fantasy' },
+  { id: 80, name: 'Crime' },
 ];
 
 const IMDB_RATINGS = ['Any rating', '6.0+', '7.0+', '7.5+', '8.0+', '9.0+'];
 const AGE_RATINGS = ['Any', 'G', 'PG', 'PG-13', 'R', '18+'];
 
-function generateCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-}
-
 export default function CreateRoomScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user } = useAuthSession();
 
   const [contentType, setContentType] = useState<'movie' | 'tv'>('movie');
   const [selectedGenreIds, setSelectedGenreIds] = useState<number[]>([]);
@@ -49,6 +44,8 @@ export default function CreateRoomScreen() {
   const [showGenresModal, setShowGenresModal] = useState(false);
   const [showImdbModal, setShowImdbModal] = useState(false);
   const [showAgeModal, setShowAgeModal] = useState(false);
+  const [creatingRoom, setCreatingRoom] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const selectedGenreNames = selectedGenreIds.length > 0
     ? selectedGenreIds.map(id => GENRES.find(g => g.id === id)?.name).join(', ')
@@ -60,9 +57,27 @@ export default function CreateRoomScreen() {
     );
   };
 
-  const handleCreateRoom = () => {
-    const code = generateCode();
-    router.replace(`/waiting-room?code=${code}`);
+  const handleCreateRoom = async () => {
+    if (!user || creatingRoom) {
+      if (!user) router.push('/auth');
+      return;
+    }
+
+    try {
+      setCreatingRoom(true);
+      setError(null);
+      const { room } = await roomService.createRoomFromFilters({
+        hostId: user.id,
+        contentType,
+        genreIds: selectedGenreIds,
+        sessionLimit: 10,
+      });
+      router.replace(`/room/${room.code}`);
+    } catch (createError) {
+      setError(createError instanceof Error ? createError.message : 'Failed to create room.');
+    } finally {
+      setCreatingRoom(false);
+    }
   };
 
   return (
@@ -181,14 +196,24 @@ export default function CreateRoomScreen() {
       >
         <TouchableOpacity
           onPress={handleCreateRoom}
+          disabled={creatingRoom}
           activeOpacity={0.8}
           className="bg-[#7c3aed] h-14 rounded-full items-center justify-center flex-row shadow-lg shadow-[#7c3aed]/40"
         >
-          <Ionicons name="sparkles" size={20} color="#ffffff" style={{ marginRight: 8 }} />
-          <Text className="text-white text-[16px] font-bold tracking-wide">
-            Generate Room Code
-          </Text>
+          {creatingRoom ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <>
+              <Ionicons name="sparkles" size={20} color="#ffffff" style={{ marginRight: 8 }} />
+              <Text className="text-white text-[16px] font-bold tracking-wide">
+                Generate Room Code
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
+        {error ? (
+          <Text className="text-[#fca5a5] text-[12px] mt-2 text-center">{error}</Text>
+        ) : null}
       </View>
 
       {/* Genres Modal */}
