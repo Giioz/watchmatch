@@ -7,8 +7,7 @@ import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { roomService } from '@/services/roomService';
 
 import { useHomeMovies } from '../hooks/useHomeMovies';
-import { useHomeAnimations } from '../hooks/useHomeAnimations'; // 🎯 ახალი ჰუკი
-
+import { useHomeAnimations } from '../hooks/useHomeAnimations'; 
 import MovieFilmStrip from './MovieFilmStrip';
 import HomeActionButtons from './HomeActionButtons';
 import HomeMovieBottomSheet from './HomeMovieBottomSheet';
