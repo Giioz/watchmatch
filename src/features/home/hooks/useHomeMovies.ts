@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { movieService } from '@/src/services/tmdbApi';
+import { TMDBMediaItem } from '@/types/movie';
 
 export function useHomeMovies(limit: number = 3) {
-  const [trendingMovies, setTrendingMovies] = useState<any[]>([]);
+  const [trendingMovies, setTrendingMovies] = useState<TMDBMediaItem[]>([]);
   const [loadingMovies, setLoadingMovies] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
