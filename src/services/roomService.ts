@@ -77,7 +77,12 @@ async function fetchRoomQueue(input: CreateRoomInput) {
   let page = 1;
 
   while (queue.length < sessionLimit && page <= 5) {
-    const response = await movieService.discoverMedia(discoverType, input.genreIds, page);
+    const response = await movieService.discoverMedia(discoverType, input.genreIds, page, {
+      minVoteAverage: input.minVoteAverage,
+      certification: input.certification,
+      certificationCountry: input.certificationCountry,
+      region: input.region,
+    });
 
     if (!response?.results?.length) {
       break;

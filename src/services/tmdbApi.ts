@@ -33,15 +33,29 @@ export const movieService = {
     type: 'movie' | 'tv' = 'movie',
     genreIds: number[] = [],
     page: number = 1,
+    options: {
+      minVoteAverage?: number;
+      certification?: string;
+      certificationCountry?: string;
+      region?: string;
+    } = {},
   ): Promise<TMDBDiscoverResponse | null> => {
     // თუ ჟანრები არჩეულია, გადავაქციოთ მძიმით გამოყოფილ სტრინგად (მაგ: "28,12")
     const genreParams = genreIds.length > 0 ? `&with_genres=${genreIds.join(',')}` : '';
     const pageParam = `&page=${page}`;
+    const voteAverageParam =
+      typeof options.minVoteAverage === 'number' ? `&vote_average.gte=${options.minVoteAverage}` : '';
+    const regionParam = options.region ? `&region=${options.region}` : '';
+    const certificationCountryParam = options.certificationCountry
+      ? `&certification_country=${options.certificationCountry}`
+      : '';
+    const certificationParam =
+      type === 'movie' && options.certification ? `&certification=${encodeURIComponent(options.certification)}` : '';
     
     // TMDb-ზე ფილმებს და სერიალებს სხვადასხვა discover ენდფოინთი აქვს
     return await fetchFromTMDB<TMDBDiscoverResponse>(
       `/discover/${type}`,
-      `${genreParams}${pageParam}&sort_by=popularity.desc`,
+      `${genreParams}${pageParam}${voteAverageParam}${regionParam}${certificationCountryParam}${certificationParam}&sort_by=popularity.desc`,
     );
   },
 

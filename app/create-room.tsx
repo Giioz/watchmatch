@@ -31,6 +31,18 @@ const GENRES = [
 const IMDB_RATINGS = ['Any rating', '6.0+', '7.0+', '7.5+', '8.0+', '9.0+'];
 const AGE_RATINGS = ['Any', 'G', 'PG', 'PG-13', 'R', '18+'];
 
+function mapImdbToMinVoteAverage(value: string): number | undefined {
+  if (value === 'Any rating') return undefined;
+  const parsed = Number(value.replace('+', ''));
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function mapAgeToCertification(value: string): string | undefined {
+  if (value === 'Any') return undefined;
+  if (value === '18+') return 'R';
+  return value;
+}
+
 export default function CreateRoomScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -71,6 +83,10 @@ export default function CreateRoomScreen() {
         contentType,
         genreIds: selectedGenreIds,
         sessionLimit: 10,
+        minVoteAverage: mapImdbToMinVoteAverage(imdbRating),
+        certification: mapAgeToCertification(ageRating),
+        certificationCountry: contentType === 'movie' ? 'US' : undefined,
+        region: contentType === 'movie' ? 'US' : undefined,
       });
       router.replace(`/room/${room.code}`);
     } catch (createError) {

@@ -70,6 +70,10 @@ export interface CreateRoomInput {
   contentType: DbContentType;
   genreIds: number[];
   sessionLimit: number;
+  minVoteAverage?: number;
+  certification?: string;
+  certificationCountry?: string;
+  region?: string;
 }
 
 export interface CreateRoomResult {
