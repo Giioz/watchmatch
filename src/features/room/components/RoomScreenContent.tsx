@@ -115,7 +115,10 @@ export default function RoomScreenContent() {
 
   const handleLeaveRoom = () => {
     if (!room || !user) return router.back();
-    if (room.status !== "swiping") return router.back();
+    if (room.status !== "swiping") {
+      roomService.setRoomUserStatus(room.id, user.id, "left").catch(() => {});
+      return router.back();
+    }
 
     Alert.alert("Leave Match?", "If you leave now, this session will end for both players.", [
       { text: "Cancel", style: "cancel" },

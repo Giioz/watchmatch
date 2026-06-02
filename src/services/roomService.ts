@@ -147,44 +147,50 @@ async function createRoomWithUniqueCode(input: CreateRoomInput) {
 
 export const roomService = {
   createRoomFromFilters: async (input: CreateRoomInput): Promise<CreateRoomResult> => {
-    const room = await createRoomWithUniqueCode(input);
     const mediaType = mediaTypeForContentType(input.contentType);
     const queue = await fetchRoomQueue(input);
 
-    const { data: hostMembership, error: hostError } = await supabase
-      .from('room_users')
-      .insert({
-        room_id: room.id,
-        user_id: input.hostId,
-        role: 'host',
-        status: 'joined',
-      })
-      .select('*')
-      .single<RoomUser>();
+    const room = await createRoomWithUniqueCode(input);
 
-    if (hostError) {
-      throw hostError;
+    try {
+      const { data: hostMembership, error: hostError } = await supabase
+        .from('room_users')
+        .insert({
+          room_id: room.id,
+          user_id: input.hostId,
+          role: 'host',
+          status: 'joined',
+        })
+        .select('*')
+        .single<RoomUser>();
+
+      if (hostError) {
+        throw hostError;
+      }
+
+      const movieRows = queue.map((movie, index) =>
+        roomMovieFromTMDB(movie, room.id, index, mediaType)
+      );
+
+      const { data: movies, error: moviesError } = await supabase
+        .from('room_movies')
+        .insert(movieRows)
+        .select('*')
+        .returns<RoomMovie[]>();
+
+      if (moviesError) {
+        throw moviesError;
+      }
+
+      return {
+        room,
+        hostMembership: assertData(hostMembership, 'Host membership was not created.'),
+        movies: movies ?? [],
+      };
+    } catch (err) {
+      await supabase.from('rooms').delete().eq('id', room.id);
+      throw err;
     }
-
-    const movieRows = queue.map((movie, index) =>
-      roomMovieFromTMDB(movie, room.id, index, mediaType)
-    );
-
-    const { data: movies, error: moviesError } = await supabase
-      .from('room_movies')
-      .insert(movieRows)
-      .select('*')
-      .returns<RoomMovie[]>();
-
-    if (moviesError) {
-      throw moviesError;
-    }
-
-    return {
-      room,
-      hostMembership: assertData(hostMembership, 'Host membership was not created.'),
-      movies: movies ?? [],
-    };
   },
 
   getRoomByCode: async (code: string): Promise<Room | null> => {
@@ -348,13 +354,20 @@ export const roomService = {
       throw error;
     }
 
-    const ids = new Set<string>();
+    const counts = new Map<string, number>();
     (data ?? []).forEach((row) => {
       const value = (row as { room_movie_id?: string }).room_movie_id;
-      if (value) ids.add(value);
+      if (value) counts.set(value, (counts.get(value) ?? 0) + 1);
     });
 
-    return Array.from(ids);
+    const sharedIds: string[] = [];
+    counts.forEach((count, id) => {
+      if (count >= 2) {
+        sharedIds.push(id);
+      }
+    });
+
+    return sharedIds;
   },
 
   createRoomFromExistingQueue: async (input: {
@@ -362,6 +375,9 @@ export const roomService = {
     sourceRoom: Room;
     roomMovieIds: string[];
   }): Promise<CreateRoomResult> => {
+    const sourceMovies = await roomService.getRoomMovies(input.sourceRoom.id);
+    const selected = sourceMovies.filter((movie) => input.roomMovieIds.includes(movie.id));
+
     const room = await createRoomWithUniqueCode({
       hostId: input.hostId,
       contentType: input.sourceRoom.content_type,
@@ -369,47 +385,50 @@ export const roomService = {
       sessionLimit: input.roomMovieIds.length,
     });
 
-    const { data: hostMembership, error: hostError } = await supabase
-      .from('room_users')
-      .insert({
+    try {
+      const { data: hostMembership, error: hostError } = await supabase
+        .from('room_users')
+        .insert({
+          room_id: room.id,
+          user_id: input.hostId,
+          role: 'host',
+          status: 'joined',
+        })
+        .select('*')
+        .single<RoomUser>();
+
+      if (hostError) throw hostError;
+
+      const movieRows = selected.map((movie, index) => ({
         room_id: room.id,
-        user_id: input.hostId,
-        role: 'host',
-        status: 'joined',
-      })
-      .select('*')
-      .single<RoomUser>();
+        tmdb_id: movie.tmdb_id,
+        position: index,
+        media_type: movie.media_type,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        backdrop_path: movie.backdrop_path,
+        overview: movie.overview,
+        vote_average: movie.vote_average,
+        release_date: movie.release_date,
+      }));
 
-    if (hostError) throw hostError;
+      const { data: movies, error: moviesError } = await supabase
+        .from('room_movies')
+        .insert(movieRows)
+        .select('*')
+        .returns<RoomMovie[]>();
 
-    const sourceMovies = await roomService.getRoomMovies(input.sourceRoom.id);
-    const selected = sourceMovies.filter((movie) => input.roomMovieIds.includes(movie.id));
-    const movieRows = selected.map((movie, index) => ({
-      room_id: room.id,
-      tmdb_id: movie.tmdb_id,
-      position: index,
-      media_type: movie.media_type,
-      title: movie.title,
-      poster_path: movie.poster_path,
-      backdrop_path: movie.backdrop_path,
-      overview: movie.overview,
-      vote_average: movie.vote_average,
-      release_date: movie.release_date,
-    }));
+      if (moviesError) throw moviesError;
 
-    const { data: movies, error: moviesError } = await supabase
-      .from('room_movies')
-      .insert(movieRows)
-      .select('*')
-      .returns<RoomMovie[]>();
-
-    if (moviesError) throw moviesError;
-
-    return {
-      room,
-      hostMembership: assertData(hostMembership, 'Host membership was not created.'),
-      movies: movies ?? [],
-    };
+      return {
+        room,
+        hostMembership: assertData(hostMembership, 'Host membership was not created.'),
+        movies: movies ?? [],
+      };
+    } catch (err) {
+      await supabase.from('rooms').delete().eq('id', room.id);
+      throw err;
+    }
   },
 
   subscribeToRoom: (roomId: string, handler: RoomRealtimeHandler<Room>): RealtimeChannel => {

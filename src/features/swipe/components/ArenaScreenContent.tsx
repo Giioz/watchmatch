@@ -211,6 +211,8 @@ export default function ArenaScreenContent() {
         onBack={handleArenaBack}
         swipedCount={swipedCount}
         likedCount={likedCount}
+        currentIndex={currentIndex}
+        totalCount={movies.length}
       />
 
       <View style={styles.stackContainer}>

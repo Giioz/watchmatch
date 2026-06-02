@@ -100,11 +100,13 @@ export default function HomeScreenContent() {
           )}
 
           {/* Dev Shortcut */}
-          <TouchableOpacity onPress={() => router.push('/arena')} style={styles.devBadge}>
-            <Text style={{ color: '#71717a', fontSize: 11, letterSpacing: 1 }}>DEV: Arena</Text>
-          </TouchableOpacity>
+          {__DEV__ && (
+            <TouchableOpacity onPress={() => router.push('/arena')} style={styles.devBadge}>
+              <Text style={{ color: '#71717a', fontSize: 11, letterSpacing: 1 }}>DEV: Arena</Text>
+            </TouchableOpacity>
+          )}
 
-          {user && (
+          {__DEV__ && user && (
             <TouchableOpacity
               onPress={handleDevRoomSimulation}
               disabled={isCreatingDevRoom}

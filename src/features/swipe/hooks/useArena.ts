@@ -23,7 +23,7 @@ interface UseArenaOptions {
 
 export function useArena(options: UseArenaOptions = {}) {
   const { roomCode } = options;
-  const { user } = useAuthSession();
+  const { user, loading: loadingAuth } = useAuthSession();
   const [movies, setMovies] = useState<TMDBMediaItem[]>([]);
   const [roomMovieIds, setRoomMovieIds] = useState<string[]>([]);
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -83,6 +83,8 @@ export function useArena(options: UseArenaOptions = {}) {
   }, []);
 
   useEffect(() => {
+    if (loadingAuth) return;
+
     if (!isRoomMode) {
       loadMovies(getRandomPageNumber(), true);
       return;
@@ -116,7 +118,7 @@ export function useArena(options: UseArenaOptions = {}) {
     return () => {
       cancelled = true;
     };
-  }, [isRoomMode, loadMovies, mapRoomMovie, roomCode]);
+  }, [isRoomMode, loadMovies, mapRoomMovie, roomCode, loadingAuth]);
 
   useEffect(() => {
     if (!isRoomMode || !roomId) return;
