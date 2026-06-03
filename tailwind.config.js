@@ -3,7 +3,8 @@ module.exports = {
   // დარწმუნდი, რომ src/components და app ზუსტად ასე გიწერია
   content: [
     "./app/**/*.{js,jsx,ts,tsx}",
-    "./src/components/**/*.{js,jsx,ts,tsx}"
+    "./src/components/**/*.{js,jsx,ts,tsx}",
+    "./src/features/**/*.{js,jsx,ts,tsx}"
   ],
   presets: [require("nativewind/preset")],
   theme: {
