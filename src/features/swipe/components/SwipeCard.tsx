@@ -17,6 +17,36 @@ interface SwipeCardProps {
   topCardX?: SharedValue<number>;
 }
 
+const GENRE_MAP: Record<number, string> = {
+  28: 'Action',
+  12: 'Adventure',
+  16: 'Animation',
+  35: 'Comedy',
+  80: 'Crime',
+  99: 'Documentary',
+  18: 'Drama',
+  10751: 'Family',
+  14: 'Fantasy',
+  36: 'History',
+  27: 'Horror',
+  10402: 'Music',
+  9648: 'Mystery',
+  10749: 'Romance',
+  878: 'Sci-Fi',
+  10770: 'TV Movie',
+  53: 'Thriller',
+  10752: 'War',
+  37: 'Western',
+  10759: 'Action & Adventure',
+  10762: 'Kids',
+  10763: 'News',
+  10764: 'Reality',
+  10765: 'Sci-Fi & Fantasy',
+  10766: 'Soap',
+  10767: 'Talk',
+  10768: 'War & Politics',
+};
+
 // ჰელპერ ფუნქცია დინამიკური რეიტინგის ვიზუალისთვის
 const getRatingTheme = (rating: number) => {
   if (rating >= 7.5) {
@@ -58,8 +88,12 @@ export default function SwipeCard({
   const title = movie.title ?? movie.name ?? 'Unknown';
   const year = (movie.release_date ?? movie.first_air_date ?? '').slice(0, 4);
   const rating = movie.vote_average.toFixed(1);
+  const isMasterpiece = movie.vote_average >= 8.5;
   const posterUri = movie.poster_path ? `${IMAGE_BASE_URL}${movie.poster_path}` : null;
   const ratingTheme = getRatingTheme(movie.vote_average);
+  const genreText = movie.genre_ids && movie.genre_ids.length > 0 
+    ? movie.genre_ids.map(id => GENRE_MAP[id]).filter(Boolean).slice(0, 2).join(' • ')
+    : '';
 
   const { gesture, animatedCardStyle, likeStyle, nopeStyle } = useSwipe({
     movie,
@@ -72,7 +106,7 @@ export default function SwipeCard({
   });
 
   const cardContent = (
-    <Animated.View style={[styles.card, animatedCardStyle]}>
+    <Animated.View style={[styles.card, isMasterpiece && styles.masterpieceCard, animatedCardStyle]}>
       {posterUri ? (
         <Image source={{ uri: posterUri }} style={styles.poster} resizeMode="cover" />
       ) : (
@@ -89,18 +123,29 @@ export default function SwipeCard({
         style={styles.infoContainer}
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          {/* დინამიკური სტილები პირდაპირ ჰელპერიდან ჯდება */}
-          <View style={[
-            styles.ratingBadge, 
-            { backgroundColor: ratingTheme.bg, borderColor: ratingTheme.border }
-          ]}>
-            <Text style={[styles.ratingText, { color: ratingTheme.text }]}>★ {rating}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={[
+              styles.ratingBadge, 
+              { backgroundColor: ratingTheme.bg, borderColor: ratingTheme.border }
+            ]}>
+              <Text style={[styles.ratingText, { color: ratingTheme.text }]}>★ {rating}</Text>
+            </View>
+            
+            {isMasterpiece && (
+              <View style={styles.masterpieceBadge}>
+                <Text style={styles.masterpieceBadgeText}>💎 Masterpiece</Text>
+              </View>
+            )}
           </View>
         </View>
 
         <Text numberOfLines={1} style={styles.title}>{title}</Text>
 
-        {year ? <Text style={styles.year}>{year}</Text> : null}
+        {year || genreText ? (
+          <Text style={styles.year}>
+            {year}{year && genreText ? '  •  ' : ''}{genreText}
+          </Text>
+        ) : null}
 
         <Text numberOfLines={2} style={styles.overview}>
           {movie.overview || 'No description available.'}
@@ -138,6 +183,14 @@ const styles = StyleSheet.create({
     shadowRadius:    24,
     shadowOffset:    { width: 0, height: 10 },
     elevation:       12,
+  },
+  masterpieceCard: {
+    borderColor: '#fbbf24',
+    borderWidth: 2,
+    shadowColor: '#fbbf24',
+    shadowOpacity: 0.6,
+    shadowRadius: 30,
+    elevation: 20,
   },
   poster: {
     width:  '100%',
@@ -179,6 +232,20 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize:    12,
     fontWeight:  '600',
+    letterSpacing: 0.5,
+  },
+  masterpieceBadge: {
+    backgroundColor: 'rgba(251, 191, 36, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(251, 191, 36, 0.4)',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  masterpieceBadgeText: {
+    color: '#fbbf24',
+    fontSize: 11,
+    fontWeight: '700',
     letterSpacing: 0.5,
   },
   title: {

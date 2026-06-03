@@ -147,44 +147,50 @@ async function createRoomWithUniqueCode(input: CreateRoomInput) {
 
 export const roomService = {
   createRoomFromFilters: async (input: CreateRoomInput): Promise<CreateRoomResult> => {
-    const room = await createRoomWithUniqueCode(input);
     const mediaType = mediaTypeForContentType(input.contentType);
     const queue = await fetchRoomQueue(input);
 
-    const { data: hostMembership, error: hostError } = await supabase
-      .from('room_users')
-      .insert({
-        room_id: room.id,
-        user_id: input.hostId,
-        role: 'host',
-        status: 'joined',
-      })
-      .select('*')
-      .single<RoomUser>();
+    const room = await createRoomWithUniqueCode(input);
 
-    if (hostError) {
-      throw hostError;
+    try {
+      const { data: hostMembership, error: hostError } = await supabase
+        .from('room_users')
+        .insert({
+          room_id: room.id,
+          user_id: input.hostId,
+          role: 'host',
+          status: 'joined',
+        })
+        .select('*')
+        .single<RoomUser>();
+
+      if (hostError) {
+        throw hostError;
+      }
+
+      const movieRows = queue.map((movie, index) =>
+        roomMovieFromTMDB(movie, room.id, index, mediaType)
+      );
+
+      const { data: movies, error: moviesError } = await supabase
+        .from('room_movies')
+        .insert(movieRows)
+        .select('*')
+        .returns<RoomMovie[]>();
+
+      if (moviesError) {
+        throw moviesError;
+      }
+
+      return {
+        room,
+        hostMembership: assertData(hostMembership, 'Host membership was not created.'),
+        movies: movies ?? [],
+      };
+    } catch (err) {
+      await supabase.from('rooms').delete().eq('id', room.id);
+      throw err;
     }
-
-    const movieRows = queue.map((movie, index) =>
-      roomMovieFromTMDB(movie, room.id, index, mediaType)
-    );
-
-    const { data: movies, error: moviesError } = await supabase
-      .from('room_movies')
-      .insert(movieRows)
-      .select('*')
-      .returns<RoomMovie[]>();
-
-    if (moviesError) {
-      throw moviesError;
-    }
-
-    return {
-      room,
-      hostMembership: assertData(hostMembership, 'Host membership was not created.'),
-      movies: movies ?? [],
-    };
   },
 
   getRoomByCode: async (code: string): Promise<Room | null> => {
@@ -348,13 +354,20 @@ export const roomService = {
       throw error;
     }
 
-    const ids = new Set<string>();
+    const counts = new Map<string, number>();
     (data ?? []).forEach((row) => {
       const value = (row as { room_movie_id?: string }).room_movie_id;
-      if (value) ids.add(value);
+      if (value) counts.set(value, (counts.get(value) ?? 0) + 1);
     });
 
-    return Array.from(ids);
+    const sharedIds: string[] = [];
+    counts.forEach((count, id) => {
+      if (count >= 2) {
+        sharedIds.push(id);
+      }
+    });
+
+    return sharedIds;
   },
 
   createRoomFromExistingQueue: async (input: {
@@ -362,6 +375,9 @@ export const roomService = {
     sourceRoom: Room;
     roomMovieIds: string[];
   }): Promise<CreateRoomResult> => {
+    const sourceMovies = await roomService.getRoomMovies(input.sourceRoom.id);
+    const selected = sourceMovies.filter((movie) => input.roomMovieIds.includes(movie.id));
+
     const room = await createRoomWithUniqueCode({
       hostId: input.hostId,
       contentType: input.sourceRoom.content_type,
@@ -369,47 +385,51 @@ export const roomService = {
       sessionLimit: input.roomMovieIds.length,
     });
 
-    const { data: hostMembership, error: hostError } = await supabase
-      .from('room_users')
-      .insert({
+    try {
+      const { data: hostMembership, error: hostError } = await supabase
+        .from('room_users')
+        .insert({
+          room_id: room.id,
+          user_id: input.hostId,
+          role: 'host',
+          status: 'joined',
+        })
+        .select('*')
+        .single<RoomUser>();
+
+      if (hostError) throw hostError;
+
+      const movieRows = selected.map((movie, index) => ({
         room_id: room.id,
-        user_id: input.hostId,
-        role: 'host',
-        status: 'joined',
-      })
-      .select('*')
-      .single<RoomUser>();
+        tmdb_id: movie.tmdb_id,
+        position: index,
+        media_type: movie.media_type,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        backdrop_path: movie.backdrop_path,
+        overview: movie.overview,
+        vote_average: movie.vote_average,
+        release_date: movie.release_date,
+        genre_ids: movie.genre_ids,
+      }));
 
-    if (hostError) throw hostError;
+      const { data: movies, error: moviesError } = await supabase
+        .from('room_movies')
+        .insert(movieRows)
+        .select('*')
+        .returns<RoomMovie[]>();
 
-    const sourceMovies = await roomService.getRoomMovies(input.sourceRoom.id);
-    const selected = sourceMovies.filter((movie) => input.roomMovieIds.includes(movie.id));
-    const movieRows = selected.map((movie, index) => ({
-      room_id: room.id,
-      tmdb_id: movie.tmdb_id,
-      position: index,
-      media_type: movie.media_type,
-      title: movie.title,
-      poster_path: movie.poster_path,
-      backdrop_path: movie.backdrop_path,
-      overview: movie.overview,
-      vote_average: movie.vote_average,
-      release_date: movie.release_date,
-    }));
+      if (moviesError) throw moviesError;
 
-    const { data: movies, error: moviesError } = await supabase
-      .from('room_movies')
-      .insert(movieRows)
-      .select('*')
-      .returns<RoomMovie[]>();
-
-    if (moviesError) throw moviesError;
-
-    return {
-      room,
-      hostMembership: assertData(hostMembership, 'Host membership was not created.'),
-      movies: movies ?? [],
-    };
+      return {
+        room,
+        hostMembership: assertData(hostMembership, 'Host membership was not created.'),
+        movies: movies ?? [],
+      };
+    } catch (err) {
+      await supabase.from('rooms').delete().eq('id', room.id);
+      throw err;
+    }
   },
 
   subscribeToRoom: (roomId: string, handler: RoomRealtimeHandler<Room>): RealtimeChannel => {
@@ -443,5 +463,138 @@ export const roomService = {
         (payload) => handler(toRealtimePayload<Match>(payload)),
       )
       .subscribe();
+  },
+
+  subscribeToSwipes: (roomId: string, handler: RoomRealtimeHandler<Swipe>): RealtimeChannel => {
+    return supabase
+      .channel(`swipes:${roomId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'swipes', filter: `room_id=eq.${roomId}` },
+        (payload) => handler(toRealtimePayload<Swipe>(payload)),
+      )
+      .subscribe();
+  },
+
+  getOpponentSwipeCount: async (roomId: string, currentUserId: string): Promise<number> => {
+    const { count, error } = await supabase
+      .from('swipes')
+      .select('*', { count: 'exact', head: true })
+      .eq('room_id', roomId)
+      .neq('user_id', currentUserId);
+
+    if (error) {
+      throw error;
+    }
+
+    return count ?? 0;
+  },
+
+  getUserStats: async (userId: string): Promise<{ matchCount: number }> => {
+    const { data: userRooms, error: roomsError } = await supabase
+      .from('room_users')
+      .select('room_id')
+      .eq('user_id', userId);
+
+    if (roomsError) throw roomsError;
+    if (!userRooms || userRooms.length === 0) return { matchCount: 0 };
+
+    const roomIds = userRooms.map((r) => r.room_id);
+    
+    const { count, error: countError } = await supabase
+      .from('matches')
+      .select('*', { count: 'exact', head: true })
+      .in('room_id', roomIds);
+
+    if (countError) throw countError;
+
+    return { matchCount: count ?? 0 };
+  },
+
+  getStreakAndTaste: async (userId: string): Promise<{ streakDays: number; topGenreId: number | null }> => {
+    // --- Streak: count consecutive distinct days the user joined a room ---
+    const { data: sessions, error: sessErr } = await supabase
+      .from('room_users')
+      .select('joined_at')
+      .eq('user_id', userId)
+      .order('joined_at', { ascending: false });
+
+    let streakDays = 0;
+    if (!sessErr && sessions && sessions.length > 0) {
+      const days = Array.from(
+        new Set(
+          sessions.map((s) => new Date(s.joined_at).toISOString().slice(0, 10)),
+        ),
+      ).sort((a, b) => (a > b ? -1 : 1)); // descending
+
+      const today = new Date().toISOString().slice(0, 10);
+      let cursor = today;
+      for (const day of days) {
+        if (day === cursor) {
+          streakDays++;
+          const d = new Date(cursor);
+          d.setDate(d.getDate() - 1);
+          cursor = d.toISOString().slice(0, 10);
+        } else {
+          break;
+        }
+      }
+    }
+
+    // --- Taste DNA: most common genre from liked swipes ---
+    const { data: likedSwipes, error: swipeErr } = await supabase
+      .from('swipes')
+      .select('room_movie_id')
+      .eq('user_id', userId)
+      .eq('liked', true);
+
+    let topGenreId: number | null = null;
+    if (!swipeErr && likedSwipes && likedSwipes.length > 0) {
+      const movieIds = likedSwipes.map((s) => s.room_movie_id);
+      const { data: movies, error: movErr } = await supabase
+        .from('room_movies')
+        .select('genre_ids')
+        .in('id', movieIds);
+
+      if (!movErr && movies) {
+        const tally: Record<number, number> = {};
+        for (const m of movies) {
+          for (const gid of (m.genre_ids ?? []) as number[]) {
+            tally[gid] = (tally[gid] ?? 0) + 1;
+          }
+        }
+        const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+        if (sorted.length > 0) topGenreId = Number(sorted[0][0]);
+      }
+    }
+
+    return { streakDays, topGenreId };
+  },
+
+  getRecentMatches: async (userId: string): Promise<(Match & { movie: RoomMovie })[]> => {
+    const { data: userRooms, error: roomsError } = await supabase
+      .from('room_users')
+      .select('room_id')
+      .eq('user_id', userId);
+
+    if (roomsError) throw roomsError;
+    if (!userRooms || userRooms.length === 0) return [];
+
+    const roomIds = userRooms.map((r) => r.room_id);
+
+    // Using raw any cast here to satisfy Supabase's generated types if room_movies isn't perfectly mapped in join
+    const { data: matches, error } = await supabase
+      .from('matches')
+      .select(`*, room_movies:room_movie_id(*)`)
+      .in('room_id', roomIds)
+      .order('matched_at', { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+
+    return (matches ?? []).map((m: any) => ({
+      ...m,
+      movie: m.room_movies,
+    }));
   },
 };

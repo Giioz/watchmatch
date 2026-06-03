@@ -46,6 +46,7 @@ export interface RoomMovie {
   overview: string | null;
   vote_average: number | null;
   release_date: string | null;
+  genre_ids: number[] | null;
   created_at: string;
 }
 
@@ -121,5 +122,6 @@ export function roomMovieFromTMDB(
     overview: movie.overview ?? null,
     vote_average: movie.vote_average ?? null,
     release_date: movie.release_date ?? movie.first_air_date ?? null,
+    genre_ids: movie.genre_ids ?? null,
   };
 }

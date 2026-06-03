@@ -18,6 +18,7 @@ import MovieDetailsModal from "./MovieDetailsModal";
 import SwipeCard from "./SwipeCard";
 import ArenaNoMatchState from "./ArenaNoMatchState";
 import ArenaSessionModals from "./ArenaSessionModals";
+import MatchCelebrationOverlay from "./MatchCelebrationOverlay";
 import { useArena } from "../hooks/useArena";
 
 const CARD_STACK_SIZE = 3;
@@ -30,12 +31,14 @@ export default function ArenaScreenContent() {
   const [roundError, setRoundError] = React.useState<string | null>(null);
   const [isSessionEndedModalVisible, setIsSessionEndedModalVisible] = React.useState(false);
   const [isLeaveConfirmVisible, setIsLeaveConfirmVisible] = React.useState(false);
+  const [showCelebration, setShowCelebration] = React.useState(false);
   const hasHandledSessionEndRef = React.useRef(false);
   const {
     movies,
     loading,
     likedCount,
     swipedCount,
+    opponentSwipes,
     currentIndex,
     selectedMovie,
     isModalVisible,
@@ -59,9 +62,10 @@ export default function ArenaScreenContent() {
   const isNoMatch = isRoomMode && isDone && !matchedMovie;
   const handleSessionEnded = React.useCallback(() => {
     if (hasHandledSessionEndRef.current) return;
+    if (matchedMovie) return; // Don't interrupt match celebration
     hasHandledSessionEndRef.current = true;
     setIsSessionEndedModalVisible(true);
-  }, []);
+  }, [matchedMovie]);
 
   const handleArenaBack = React.useCallback(() => {
     if (!isRoomMode || !roomId || !user) {
@@ -131,19 +135,24 @@ export default function ArenaScreenContent() {
 
   React.useEffect(() => {
     if (!matchedMovie) return;
-    if (roomId) {
-      roomService.setRoomStatus(roomId, "finished").catch(() => {});
-    }
-    router.replace({
-      pathname: "/match",
-      params: {
-        title: matchedMovie.title ?? matchedMovie.name ?? "Matched",
-        poster: matchedMovie.poster_path ?? "",
-        rating: String(matchedMovie.vote_average ?? ""),
-        year: (matchedMovie.release_date ?? matchedMovie.first_air_date ?? "").slice(0, 4),
-        overview: matchedMovie.overview ?? "",
-      },
-    });
+    
+    setShowCelebration(true);
+    
+    const timeout = setTimeout(() => {
+      setShowCelebration(false);
+      router.replace({
+        pathname: "/match",
+        params: {
+          title: matchedMovie.title ?? matchedMovie.name ?? "Matched",
+          poster: matchedMovie.poster_path ?? "",
+          rating: String(matchedMovie.vote_average ?? ""),
+          year: (matchedMovie.release_date ?? matchedMovie.first_air_date ?? "").slice(0, 4),
+          overview: matchedMovie.overview ?? "",
+        },
+      });
+    }, 3000);
+    
+    return () => clearTimeout(timeout);
   }, [matchedMovie, roomId, router]);
 
   React.useEffect(() => {
@@ -191,10 +200,8 @@ export default function ArenaScreenContent() {
     };
   }, [handleSessionEnded, isRoomMode, roomCode, roomId, user]);
 
-  React.useEffect(() => {
-    if (!isNoMatch || !roomId) return;
-    roomService.setRoomStatus(roomId, "finished").catch(() => {});
-  }, [isNoMatch, roomId]);
+  // Removed premature setRoomStatus("finished") on isNoMatch
+  // to prevent kicking the slower swiper out of the session.
 
   if (loading) {
     return (
@@ -211,6 +218,9 @@ export default function ArenaScreenContent() {
         onBack={handleArenaBack}
         swipedCount={swipedCount}
         likedCount={likedCount}
+        currentIndex={currentIndex}
+        totalCount={movies.length}
+        opponentSwipes={opponentSwipes}
       />
 
       <View style={styles.stackContainer}>
@@ -277,6 +287,11 @@ export default function ArenaScreenContent() {
         }}
         onCancelLeave={() => setIsLeaveConfirmVisible(false)}
         onConfirmLeave={confirmLeave}
+      />
+
+      <MatchCelebrationOverlay
+        visible={showCelebration}
+        movie={matchedMovie}
       />
     </SafeAreaView>
   );
