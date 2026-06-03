@@ -88,6 +88,7 @@ export default function SwipeCard({
   const title = movie.title ?? movie.name ?? 'Unknown';
   const year = (movie.release_date ?? movie.first_air_date ?? '').slice(0, 4);
   const rating = movie.vote_average.toFixed(1);
+  const isMasterpiece = movie.vote_average >= 8.5;
   const posterUri = movie.poster_path ? `${IMAGE_BASE_URL}${movie.poster_path}` : null;
   const ratingTheme = getRatingTheme(movie.vote_average);
   const genreText = movie.genre_ids && movie.genre_ids.length > 0 
@@ -105,7 +106,7 @@ export default function SwipeCard({
   });
 
   const cardContent = (
-    <Animated.View style={[styles.card, animatedCardStyle]}>
+    <Animated.View style={[styles.card, isMasterpiece && styles.masterpieceCard, animatedCardStyle]}>
       {posterUri ? (
         <Image source={{ uri: posterUri }} style={styles.poster} resizeMode="cover" />
       ) : (
@@ -122,12 +123,19 @@ export default function SwipeCard({
         style={styles.infoContainer}
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          {/* დინამიკური სტილები პირდაპირ ჰელპერიდან ჯდება */}
-          <View style={[
-            styles.ratingBadge, 
-            { backgroundColor: ratingTheme.bg, borderColor: ratingTheme.border }
-          ]}>
-            <Text style={[styles.ratingText, { color: ratingTheme.text }]}>★ {rating}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={[
+              styles.ratingBadge, 
+              { backgroundColor: ratingTheme.bg, borderColor: ratingTheme.border }
+            ]}>
+              <Text style={[styles.ratingText, { color: ratingTheme.text }]}>★ {rating}</Text>
+            </View>
+            
+            {isMasterpiece && (
+              <View style={styles.masterpieceBadge}>
+                <Text style={styles.masterpieceBadgeText}>💎 Masterpiece</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -176,6 +184,14 @@ const styles = StyleSheet.create({
     shadowOffset:    { width: 0, height: 10 },
     elevation:       12,
   },
+  masterpieceCard: {
+    borderColor: '#fbbf24',
+    borderWidth: 2,
+    shadowColor: '#fbbf24',
+    shadowOpacity: 0.6,
+    shadowRadius: 30,
+    elevation: 20,
+  },
   poster: {
     width:  '100%',
     height: '100%',
@@ -216,6 +232,20 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize:    12,
     fontWeight:  '600',
+    letterSpacing: 0.5,
+  },
+  masterpieceBadge: {
+    backgroundColor: 'rgba(251, 191, 36, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(251, 191, 36, 0.4)',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  masterpieceBadgeText: {
+    color: '#fbbf24',
+    fontSize: 11,
+    fontWeight: '700',
     letterSpacing: 0.5,
   },
   title: {

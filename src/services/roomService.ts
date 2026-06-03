@@ -410,6 +410,7 @@ export const roomService = {
         overview: movie.overview,
         vote_average: movie.vote_average,
         release_date: movie.release_date,
+        genre_ids: movie.genre_ids,
       }));
 
       const { data: movies, error: moviesError } = await supabase
@@ -462,5 +463,138 @@ export const roomService = {
         (payload) => handler(toRealtimePayload<Match>(payload)),
       )
       .subscribe();
+  },
+
+  subscribeToSwipes: (roomId: string, handler: RoomRealtimeHandler<Swipe>): RealtimeChannel => {
+    return supabase
+      .channel(`swipes:${roomId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'swipes', filter: `room_id=eq.${roomId}` },
+        (payload) => handler(toRealtimePayload<Swipe>(payload)),
+      )
+      .subscribe();
+  },
+
+  getOpponentSwipeCount: async (roomId: string, currentUserId: string): Promise<number> => {
+    const { count, error } = await supabase
+      .from('swipes')
+      .select('*', { count: 'exact', head: true })
+      .eq('room_id', roomId)
+      .neq('user_id', currentUserId);
+
+    if (error) {
+      throw error;
+    }
+
+    return count ?? 0;
+  },
+
+  getUserStats: async (userId: string): Promise<{ matchCount: number }> => {
+    const { data: userRooms, error: roomsError } = await supabase
+      .from('room_users')
+      .select('room_id')
+      .eq('user_id', userId);
+
+    if (roomsError) throw roomsError;
+    if (!userRooms || userRooms.length === 0) return { matchCount: 0 };
+
+    const roomIds = userRooms.map((r) => r.room_id);
+    
+    const { count, error: countError } = await supabase
+      .from('matches')
+      .select('*', { count: 'exact', head: true })
+      .in('room_id', roomIds);
+
+    if (countError) throw countError;
+
+    return { matchCount: count ?? 0 };
+  },
+
+  getStreakAndTaste: async (userId: string): Promise<{ streakDays: number; topGenreId: number | null }> => {
+    // --- Streak: count consecutive distinct days the user joined a room ---
+    const { data: sessions, error: sessErr } = await supabase
+      .from('room_users')
+      .select('joined_at')
+      .eq('user_id', userId)
+      .order('joined_at', { ascending: false });
+
+    let streakDays = 0;
+    if (!sessErr && sessions && sessions.length > 0) {
+      const days = Array.from(
+        new Set(
+          sessions.map((s) => new Date(s.joined_at).toISOString().slice(0, 10)),
+        ),
+      ).sort((a, b) => (a > b ? -1 : 1)); // descending
+
+      const today = new Date().toISOString().slice(0, 10);
+      let cursor = today;
+      for (const day of days) {
+        if (day === cursor) {
+          streakDays++;
+          const d = new Date(cursor);
+          d.setDate(d.getDate() - 1);
+          cursor = d.toISOString().slice(0, 10);
+        } else {
+          break;
+        }
+      }
+    }
+
+    // --- Taste DNA: most common genre from liked swipes ---
+    const { data: likedSwipes, error: swipeErr } = await supabase
+      .from('swipes')
+      .select('room_movie_id')
+      .eq('user_id', userId)
+      .eq('liked', true);
+
+    let topGenreId: number | null = null;
+    if (!swipeErr && likedSwipes && likedSwipes.length > 0) {
+      const movieIds = likedSwipes.map((s) => s.room_movie_id);
+      const { data: movies, error: movErr } = await supabase
+        .from('room_movies')
+        .select('genre_ids')
+        .in('id', movieIds);
+
+      if (!movErr && movies) {
+        const tally: Record<number, number> = {};
+        for (const m of movies) {
+          for (const gid of (m.genre_ids ?? []) as number[]) {
+            tally[gid] = (tally[gid] ?? 0) + 1;
+          }
+        }
+        const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+        if (sorted.length > 0) topGenreId = Number(sorted[0][0]);
+      }
+    }
+
+    return { streakDays, topGenreId };
+  },
+
+  getRecentMatches: async (userId: string): Promise<(Match & { movie: RoomMovie })[]> => {
+    const { data: userRooms, error: roomsError } = await supabase
+      .from('room_users')
+      .select('room_id')
+      .eq('user_id', userId);
+
+    if (roomsError) throw roomsError;
+    if (!userRooms || userRooms.length === 0) return [];
+
+    const roomIds = userRooms.map((r) => r.room_id);
+
+    // Using raw any cast here to satisfy Supabase's generated types if room_movies isn't perfectly mapped in join
+    const { data: matches, error } = await supabase
+      .from('matches')
+      .select(`*, room_movies:room_movie_id(*)`)
+      .in('room_id', roomIds)
+      .order('matched_at', { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+
+    return (matches ?? []).map((m: any) => ({
+      ...m,
+      movie: m.room_movies,
+    }));
   },
 };

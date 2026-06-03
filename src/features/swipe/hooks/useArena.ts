@@ -32,6 +32,7 @@ export function useArena(options: UseArenaOptions = {}) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [likedCount, setLikedCount] = useState(0);
   const [swipedCount, setSwipedCount] = useState(0);
+  const [opponentSwipes, setOpponentSwipes] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const [selectedMovie, setSelectedMovie] = useState<TMDBMediaItem | null>(null);
@@ -50,6 +51,7 @@ export function useArena(options: UseArenaOptions = {}) {
     overview: string | null;
     vote_average: number | null;
     release_date: string | null;
+    genre_ids?: number[] | null;
   }): TMDBMediaItem => {
     return {
       id: roomMovie.tmdb_id,
@@ -59,6 +61,7 @@ export function useArena(options: UseArenaOptions = {}) {
       overview: roomMovie.overview ?? "",
       vote_average: roomMovie.vote_average ?? 0,
       release_date: roomMovie.release_date ?? undefined,
+      genre_ids: roomMovie.genre_ids ?? undefined,
     };
   }, []);
 
@@ -123,6 +126,12 @@ export function useArena(options: UseArenaOptions = {}) {
   useEffect(() => {
     if (!isRoomMode || !roomId) return;
 
+    if (user) {
+      roomService.getOpponentSwipeCount(roomId, user.id).then((count) => {
+        setOpponentSwipes(count);
+      }).catch(() => {});
+    }
+
     const channel = roomService.subscribeToMatches(roomId, async (payload) => {
       if (payload.eventType !== "INSERT" || !payload.new) return;
       const queue = await roomService.getRoomMovies(roomId);
@@ -132,10 +141,19 @@ export function useArena(options: UseArenaOptions = {}) {
       roomService.setRoomStatus(roomId, "matched").catch(() => {});
     });
 
+    const swipeChannel = roomService.subscribeToSwipes(roomId, (payload) => {
+      if (payload.eventType === "INSERT" && payload.new) {
+        if (user && payload.new.user_id !== user.id) {
+          setOpponentSwipes((prev) => prev + 1);
+        }
+      }
+    });
+
     return () => {
       channel.unsubscribe();
+      swipeChannel.unsubscribe();
     };
-  }, [isRoomMode, mapRoomMovie, roomId]);
+  }, [isRoomMode, mapRoomMovie, roomId, user]);
 
   const checkAndPrefetch = useCallback(
     (nextIdx: number, total: number) => {
@@ -218,6 +236,7 @@ export function useArena(options: UseArenaOptions = {}) {
     loading,
     likedCount,
     swipedCount,
+    opponentSwipes,
     currentIndex,
     selectedMovie,
     isModalVisible,
