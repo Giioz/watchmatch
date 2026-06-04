@@ -38,6 +38,8 @@ export const movieService = {
       certification?: string;
       certificationCountry?: string;
       region?: string;
+      releaseDateGte?: string;
+      releaseDateLte?: string;
     } = {},
   ): Promise<TMDBDiscoverResponse | null> => {
     // თუ ჟანრები არჩეულია, გადავაქციოთ მძიმით გამოყოფილ სტრინგად (მაგ: "28,12")
@@ -51,11 +53,17 @@ export const movieService = {
       : '';
     const certificationParam =
       type === 'movie' && options.certification ? `&certification=${encodeURIComponent(options.certification)}` : '';
-    
+
+    // Release era window — different date fields for movies vs TV.
+    const dateGteField = type === 'tv' ? 'first_air_date.gte' : 'primary_release_date.gte';
+    const dateLteField = type === 'tv' ? 'first_air_date.lte' : 'primary_release_date.lte';
+    const releaseGteParam = options.releaseDateGte ? `&${dateGteField}=${options.releaseDateGte}` : '';
+    const releaseLteParam = options.releaseDateLte ? `&${dateLteField}=${options.releaseDateLte}` : '';
+
     // TMDb-ზე ფილმებს და სერიალებს სხვადასხვა discover ენდფოინთი აქვს
     return await fetchFromTMDB<TMDBDiscoverResponse>(
       `/discover/${type}`,
-      `${genreParams}${pageParam}${voteAverageParam}${regionParam}${certificationCountryParam}${certificationParam}&sort_by=popularity.desc`,
+      `${genreParams}${pageParam}${voteAverageParam}${regionParam}${certificationCountryParam}${certificationParam}${releaseGteParam}${releaseLteParam}&sort_by=popularity.desc`,
     );
   },
 

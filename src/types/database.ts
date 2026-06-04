@@ -75,6 +75,8 @@ export interface CreateRoomInput {
   certification?: string;
   certificationCountry?: string;
   region?: string;
+  releaseDateGte?: string;
+  releaseDateLte?: string;
 }
 
 export interface CreateRoomResult {

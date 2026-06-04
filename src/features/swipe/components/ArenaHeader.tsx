@@ -11,107 +11,89 @@ interface ArenaHeaderProps {
   opponentSwipes?: number;
 }
 
-export default function ArenaHeader({ onBack, swipedCount, likedCount, currentIndex, totalCount, opponentSwipes }: ArenaHeaderProps) {
-  const progress = totalCount && totalCount > 0 && currentIndex !== undefined ? (currentIndex / totalCount) * 100 : 0;
-  const opponentProgress = totalCount && totalCount > 0 && opponentSwipes !== undefined ? (opponentSwipes / totalCount) * 100 : 0;
+export default function ArenaHeader({
+  onBack,
+  likedCount,
+  currentIndex,
+  totalCount,
+  opponentSwipes,
+}: ArenaHeaderProps) {
+  const isRoomMode = opponentSwipes !== undefined;
+  const deckLeft =
+    totalCount !== undefined && currentIndex !== undefined
+      ? Math.max(0, totalCount - currentIndex)
+      : undefined;
 
   return (
-    <View style={styles.headerContainer}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Ionicons name="chevron-back" size={24} color="#71717a" />
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <TouchableOpacity onPress={onBack} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+        <Ionicons name="chevron-back" size={24} color="#71717a" />
+      </TouchableOpacity>
 
-        <View style={{ alignItems: 'center' }}>
-          <Text style={styles.title}>Shuffle Mode</Text>
-          <Text style={styles.subtitle}>
-            {swipedCount} swiped · {likedCount} liked
-          </Text>
-        </View>
-
-        <View style={{ width: 24 }} />
-      </View>
-      {totalCount !== undefined && currentIndex !== undefined && (
-        <View style={styles.progressWrapper}>
-          <View style={styles.progressRow}>
-            <Text style={styles.progressLabel}>You</Text>
-            <View style={styles.progressBarBg}>
-               <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
-            </View>
-            <Text style={styles.progressValue}>{currentIndex}/{totalCount}</Text>
+      <View style={styles.center}>
+        <View style={styles.vsRow}>
+          <View style={[styles.avatar, styles.youAvatar]}>
+            <Text style={styles.avatarText}>You</Text>
           </View>
-          
-          {opponentSwipes !== undefined && (
-            <View style={[styles.progressRow, { marginTop: 6 }]}>
-              <Text style={styles.progressLabelFriend}>Friend</Text>
-              <View style={styles.progressBarBg}>
-                 <View style={[styles.progressBarFriendFill, { width: `${opponentProgress}%` }]} />
+          {isRoomMode && (
+            <>
+              <Text style={styles.vs}>vs</Text>
+              <View style={[styles.avatar, styles.themAvatar]}>
+                <Ionicons name="person" size={16} color="#a1a1aa" />
               </View>
-              <Text style={styles.progressValue}>{opponentSwipes}/{totalCount}</Text>
-            </View>
+            </>
           )}
         </View>
+        <Text style={styles.stats}>
+          You {likedCount}
+          {isRoomMode ? `  ·  Them ${opponentSwipes}` : ''} <Text style={styles.statsLabel}>likes</Text>
+        </Text>
+      </View>
+
+      {deckLeft !== undefined ? (
+        <View style={styles.deckPill}>
+          <Text style={styles.deckText}>{deckLeft} left</Text>
+        </View>
+      ) : (
+        <View style={{ width: 24 }} />
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    paddingBottom: 12,
-  },
-  header: {
+  container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 8,
-    paddingBottom: 8,
+    paddingBottom: 14,
   },
-  title: { fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#7c3aed', fontWeight: '500' },
-  subtitle: { color: '#3f3f46', fontSize: 11, marginTop: 2 },
-  progressWrapper: {
-    paddingHorizontal: 24,
-    marginTop: 4,
-  },
-  progressRow: {
-    flexDirection: 'row',
+  center: { alignItems: 'center' },
+  vsRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  avatar: {
+    minWidth: 34,
+    height: 34,
+    borderRadius: 17,
+    paddingHorizontal: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
   },
-  progressLabel: {
-    color: '#a1a1aa',
-    fontSize: 10,
-    fontWeight: '600',
-    width: 38,
+  youAvatar: { backgroundColor: 'rgba(124,58,237,0.22)', borderColor: 'rgba(167,139,250,0.6)' },
+  themAvatar: { backgroundColor: '#18181b', borderColor: '#3f3f46', width: 34 },
+  avatarText: { color: '#f4f4f5', fontSize: 12, fontWeight: '700' },
+  vs: { color: '#52525b', fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
+  stats: { color: '#a1a1aa', fontSize: 12, fontWeight: '600', marginTop: 6 },
+  statsLabel: { color: '#52525b', fontSize: 11, fontWeight: '500' },
+  deckPill: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(124,92,240,0.4)',
+    backgroundColor: 'rgba(124,92,240,0.12)',
+    paddingHorizontal: 11,
+    paddingVertical: 5,
   },
-  progressLabelFriend: {
-    color: '#71717a',
-    fontSize: 10,
-    fontWeight: '600',
-    width: 38,
-  },
-  progressValue: {
-    color: '#71717a',
-    fontSize: 9,
-    fontWeight: '500',
-    width: 28,
-    textAlign: 'right',
-  },
-  progressBarBg: {
-    flex: 1,
-    height: 4,
-    backgroundColor: '#27272a',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#7c3aed',
-    borderRadius: 2,
-  },
-  progressBarFriendFill: {
-    height: '100%',
-    backgroundColor: '#3b82f6',
-    borderRadius: 2,
-  },
+  deckText: { color: '#c4b5fd', fontSize: 12, fontWeight: '700' },
 });

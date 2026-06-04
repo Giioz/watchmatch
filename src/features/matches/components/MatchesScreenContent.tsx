@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
@@ -55,9 +56,43 @@ function MatchCard({ match, onPress }: { match: MatchWithMovie; onPress: () => v
   );
 }
 
+type SortKey = 'newest' | 'rating';
+
 export default function MatchesScreenContent() {
   const router = useRouter();
-  const { matches, matchCount, topGenreId, streakDays, loading, error, user } = useMatches();
+  const { matches, matchCount, topGenreId, streakDays, favoritePartner, loading, error, user } =
+    useMatches();
+
+  const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+  const [sort, setSort] = useState<SortKey>('newest');
+
+  // Genres that actually appear in this user's matches, for the filter bar.
+  const availableGenres = useMemo(() => {
+    const ids = new Set<number>();
+    matches.forEach((m) => (m.movie?.genre_ids ?? []).forEach((id) => ids.add(id)));
+    return GENRES.filter((g) => ids.has(g.id));
+  }, [matches]);
+
+  const displayedMatches = useMemo(() => {
+    let list = matches;
+    if (selectedGenres.length > 0) {
+      list = list.filter((m) =>
+        (m.movie?.genre_ids ?? []).some((id) => selectedGenres.includes(id)),
+      );
+    }
+    const sorted = [...list];
+    if (sort === 'rating') {
+      sorted.sort((a, b) => (b.movie?.vote_average ?? 0) - (a.movie?.vote_average ?? 0));
+    } else {
+      sorted.sort(
+        (a, b) => new Date(b.matched_at).getTime() - new Date(a.matched_at).getTime(),
+      );
+    }
+    return sorted;
+  }, [matches, selectedGenres, sort]);
+
+  const toggleGenre = (id: number) =>
+    setSelectedGenres((prev) => (prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]));
 
   const openMatch = (match: MatchWithMovie) => {
     router.push({
@@ -120,7 +155,47 @@ export default function MatchesScreenContent() {
                 label="Longest Streak"
                 value={streakDays > 0 ? `${streakDays}d` : '—'}
               />
+              <StatCard label="Favorite Partner" value={favoritePartner ?? '—'} />
             </ScrollView>
+
+            {/* Filter bar */}
+            {matches.length > 0 && (
+              <View style={styles.filterBar}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.filterPills}
+                >
+                  {availableGenres.map((genre) => {
+                    const active = selectedGenres.includes(genre.id);
+                    return (
+                      <TouchableOpacity
+                        key={genre.id}
+                        activeOpacity={0.8}
+                        onPress={() => toggleGenre(genre.id)}
+                        style={[styles.filterPill, active ? styles.filterPillActive : styles.filterPillIdle]}
+                      >
+                        <Text style={[styles.filterPillText, active && styles.filterPillTextActive]}>
+                          {genre.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => setSort((s) => (s === 'newest' ? 'rating' : 'newest'))}
+                  style={styles.sortToggle}
+                >
+                  <Ionicons
+                    name={sort === 'rating' ? 'star' : 'time-outline'}
+                    size={13}
+                    color="#c4b5fd"
+                  />
+                  <Text style={styles.sortText}>{sort === 'rating' ? 'Rating' : 'Newest'}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
             {/* Grid or empty */}
             {matches.length === 0 ? (
@@ -136,9 +211,11 @@ export default function MatchesScreenContent() {
                   <Text style={styles.ctaText}>Start a Room</Text>
                 </TouchableOpacity>
               </View>
+            ) : displayedMatches.length === 0 ? (
+              <Text style={styles.noFilterText}>No matches in that genre yet.</Text>
             ) : (
               <View style={styles.grid}>
-                {matches.map((match) => (
+                {displayedMatches.map((match) => (
                   <MatchCard key={match.id} match={match} onPress={() => openMatch(match)} />
                 ))}
               </View>
@@ -191,6 +268,37 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginTop: 4,
   },
+  filterBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 24,
+    paddingTop: 22,
+    gap: 8,
+  },
+  filterPills: { gap: 8, paddingRight: 8 },
+  filterPill: {
+    paddingHorizontal: 13,
+    paddingVertical: 7,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  filterPillActive: { backgroundColor: '#7c3aed', borderColor: '#7c3aed' },
+  filterPillIdle: { backgroundColor: '#15151c', borderColor: '#27272a' },
+  filterPillText: { color: '#9ca3af', fontSize: 12, fontWeight: '600' },
+  filterPillTextActive: { color: '#fff' },
+  sortToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderWidth: 1,
+    borderColor: '#3f3f46',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    marginRight: 24,
+  },
+  sortText: { color: '#c4b5fd', fontSize: 12, fontWeight: '600' },
+  noFilterText: { color: '#71717a', fontSize: 13, textAlign: 'center', paddingTop: 30 },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

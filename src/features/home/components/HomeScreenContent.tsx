@@ -18,14 +18,18 @@ import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { roomService } from '@/services/roomService';
 
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { useHomeDashboard } from '../hooks/useHomeDashboard';
 import { useHomeAnimations } from '../hooks/useHomeAnimations';
+import { useOnboarding } from '../hooks/useOnboarding';
 import { useActiveRooms } from '@/features/room/hooks/useActiveRooms';
 import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar';
 import StreakWidget from './StreakWidget';
 import RecentMatchesScroll from './RecentMatchesScroll';
 import HomeMovieBottomSheet from './HomeMovieBottomSheet';
 import HomeProfileButton from './HomeProfileButton';
+import HomeDiscoverTeaser from './HomeDiscoverTeaser';
+import OnboardingOverlay from './OnboardingOverlay';
 import { TMDBMediaItem } from '@/types/movie';
 
 function formatDevError(error: unknown) {
@@ -60,6 +64,7 @@ export default function HomeScreenContent() {
   const { user, loading: loadingAuth } = useAuthSession();
   const { rooms: activeRooms } = useActiveRooms();
   const activeRoom = activeRooms[0] ?? null;
+  const { needsOnboarding, complete: completeOnboarding } = useOnboarding();
 
   const [selectedMovie, setSelectedMovie] = useState<TMDBMediaItem | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -143,6 +148,36 @@ export default function HomeScreenContent() {
               )}
             </Animated.View>
 
+            {/* No-auth locked dashboard preview */}
+            {!loadingAuth && !user && (
+              <View style={styles.lockedCard}>
+                <View style={styles.lockedPreview} pointerEvents="none">
+                  <View style={styles.lockedBarWide} />
+                  <View style={styles.lockedChipRow}>
+                    <View style={styles.lockedChip} />
+                    <View style={styles.lockedChip} />
+                  </View>
+                  <View style={styles.lockedPosters}>
+                    {[0, 1, 2].map((i) => (
+                      <View key={i} style={styles.lockedPoster} />
+                    ))}
+                  </View>
+                </View>
+                <BlurView intensity={26} tint="dark" style={StyleSheet.absoluteFill} />
+                <View style={styles.lockedOverlay}>
+                  <Ionicons name="lock-closed" size={22} color="#a78bfa" />
+                  <Text style={styles.lockedTitle}>Sign in to unlock your dashboard</Text>
+                  <TouchableOpacity
+                    onPress={() => router.push('/auth')}
+                    style={styles.lockedBtn}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.lockedBtnText}>Sign In</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
             {/* Streak + Taste DNA widget */}
             {user && (
               <Animated.View style={{ opacity: cardsAnim }}>
@@ -190,9 +225,12 @@ export default function HomeScreenContent() {
               </Animated.View>
             )}
 
+            {/* Discover teaser (drives toward Rooms) */}
+            {user && <HomeDiscoverTeaser onPress={() => router.push('/rooms')} />}
+
             {/* Primary CTA → Rooms tab (the action center) */}
-            <Animated.View style={[{ marginTop: 28, paddingHorizontal: 24 }, { opacity: actionsAnim }]}>
-              {user ? (
+            {user && (
+              <Animated.View style={[{ marginTop: 28, paddingHorizontal: 24 }, { opacity: actionsAnim }]}>
                 <TouchableOpacity
                   activeOpacity={0.85}
                   onPress={() => router.push('/rooms')}
@@ -201,18 +239,8 @@ export default function HomeScreenContent() {
                   <Ionicons name="play-circle-outline" size={20} color="#fff" />
                   <Text style={styles.pickButtonText}>Pick tonight&apos;s film</Text>
                 </TouchableOpacity>
-              ) : (
-                !loadingAuth && (
-                  <TouchableOpacity
-                    activeOpacity={0.85}
-                    onPress={() => router.push('/auth')}
-                    style={styles.pickButton}
-                  >
-                    <Text style={styles.pickButtonText}>Sign in to unlock</Text>
-                  </TouchableOpacity>
-                )
-              )}
-            </Animated.View>
+              </Animated.View>
+            )}
           </ScrollView>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
@@ -223,6 +251,9 @@ export default function HomeScreenContent() {
         movie={selectedMovie}
         onClose={() => setIsModalVisible(false)}
       />
+
+      {/* First-launch taste quiz */}
+      {needsOnboarding && <OnboardingOverlay onComplete={completeOnboarding} />}
     </SafeAreaView>
   );
 }
@@ -309,6 +340,37 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
+  lockedCard: {
+    marginHorizontal: 24,
+    marginTop: 24,
+    height: 240,
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#27272a',
+    backgroundColor: '#111115',
+  },
+  lockedPreview: { flex: 1, padding: 18, gap: 14 },
+  lockedBarWide: { height: 56, borderRadius: 14, backgroundColor: '#1b1b22' },
+  lockedChipRow: { flexDirection: 'row', gap: 10 },
+  lockedChip: { flex: 1, height: 30, borderRadius: 999, backgroundColor: '#1b1b22' },
+  lockedPosters: { flexDirection: 'row', gap: 10 },
+  lockedPoster: { flex: 1, height: 80, borderRadius: 12, backgroundColor: '#1b1b22' },
+  lockedOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingHorizontal: 24,
+  },
+  lockedTitle: { color: '#f4f4f5', fontSize: 16, fontWeight: '700', textAlign: 'center' },
+  lockedBtn: {
+    backgroundColor: '#7c3aed',
+    paddingHorizontal: 26,
+    paddingVertical: 12,
+    borderRadius: 14,
+  },
+  lockedBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
   devBadge: { position: 'absolute', top: 56, right: 24, backgroundColor: '#27272a', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, zIndex: 20 },
   devRoomBadge: {
     position: 'absolute',

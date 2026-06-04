@@ -23,6 +23,31 @@ export const GENRES: Genre[] = [
 export const IMDB_RATINGS = ['Any rating', '6.0+', '7.0+', '7.5+', '8.0+', '9.0+'];
 export const AGE_RATINGS = ['Any', 'G', 'PG', 'PG-13', 'R', '18+'];
 
+export const RELEASE_ERAS = ['All', 'Classic', '90s', '2000s', 'Recent'] as const;
+export type ReleaseEra = (typeof RELEASE_ERAS)[number];
+
+/**
+ * Maps a release era to a TMDB discover date window (YYYY-MM-DD strings).
+ * "Recent" is the last ~10 years; "Classic" is everything pre-1980.
+ */
+export function mapEraToDateRange(era: ReleaseEra): { gte?: string; lte?: string } {
+  switch (era) {
+    case 'Classic':
+      return { lte: '1979-12-31' };
+    case '90s':
+      return { gte: '1990-01-01', lte: '1999-12-31' };
+    case '2000s':
+      return { gte: '2000-01-01', lte: '2009-12-31' };
+    case 'Recent': {
+      const year = new Date().getFullYear() - 10;
+      return { gte: `${year}-01-01` };
+    }
+    case 'All':
+    default:
+      return {};
+  }
+}
+
 export function mapImdbToMinVoteAverage(value: string): number | undefined {
   if (value === 'Any rating') return undefined;
   const parsed = Number(value.replace('+', ''));

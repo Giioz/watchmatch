@@ -4,6 +4,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 interface ArenaNoMatchStateProps {
   roundLoading: null | "rerun" | "liked";
   roundError: string | null;
+  sharedLikes?: string[];
   onRunAgain: () => void;
   onSecondRoundLiked: () => void;
 }
@@ -11,6 +12,7 @@ interface ArenaNoMatchStateProps {
 export default function ArenaNoMatchState({
   roundLoading,
   roundError,
+  sharedLikes,
   onRunAgain,
   onSecondRoundLiked,
 }: ArenaNoMatchStateProps) {
@@ -18,6 +20,12 @@ export default function ArenaNoMatchState({
     <View style={styles.doneContainer}>
       <Text style={{ fontSize: 40 }}>💔</Text>
       <Text style={styles.doneText}>No match this round</Text>
+      {sharedLikes && sharedLikes.length > 0 && (
+        <View style={styles.consolation}>
+          <Text style={styles.consolationLabel}>You both liked</Text>
+          <Text style={styles.consolationTitles}>{sharedLikes.join(" · ")}</Text>
+        </View>
+      )}
       <TouchableOpacity
         onPress={onRunAgain}
         style={styles.refreshButton}
@@ -75,6 +83,30 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: "#fca5a5",
     fontSize: 12,
+    textAlign: "center",
+  },
+  consolation: {
+    marginTop: 16,
+    alignItems: "center",
+    backgroundColor: "#15151c",
+    borderWidth: 1,
+    borderColor: "#27272a",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  consolationLabel: {
+    color: "#71717a",
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  consolationTitles: {
+    color: "#c4b5fd",
+    fontSize: 14,
+    fontWeight: "600",
     textAlign: "center",
   },
 });

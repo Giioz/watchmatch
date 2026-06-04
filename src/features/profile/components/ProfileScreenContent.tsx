@@ -7,10 +7,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ProfileFeatureList from './ProfileFeatureList';
 import ProfileHeader from './ProfileHeader';
 import ProfileSignOutButton from './ProfileSignOutButton';
 import ProfileStats from './ProfileStats';
+import ProfileTasteDNA from './ProfileTasteDNA';
+import ProfileBadges from './ProfileBadges';
+import ProfilePartnerInsights from './ProfilePartnerInsights';
+import ProfileSettings from './ProfileSettings';
 import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar';
 import { useProfile } from '../hooks/useProfile';
 
@@ -42,7 +45,10 @@ export default function ProfileScreenContent() {
           streakDays={stats.streakDays}
           loading={stats.loading}
         />
-        <ProfileFeatureList />
+        <ProfileTasteDNA breakdown={stats.genreBreakdown} />
+        <ProfileBadges matches={stats.matches} streakDays={stats.streakDays} rooms={stats.rooms} />
+        <ProfilePartnerInsights partner={stats.favoritePartner} />
+        <ProfileSettings />
         <ProfileSignOutButton onPress={signOut} />
       </ScrollView>
     </SafeAreaView>

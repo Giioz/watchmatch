@@ -3,6 +3,7 @@ import { movieService } from "@/src/services/tmdbApi";
 import { roomService } from "@/services/roomService";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { useCallback, useEffect, useState } from "react";
+import { Vibration } from "react-native";
 import { useSharedValue } from "react-native-reanimated";
 
 const PREFETCH_THRESHOLD = 5;
@@ -166,6 +167,7 @@ export function useArena(options: UseArenaOptions = {}) {
   );
 
   const handleSwipeRight = useCallback(() => {
+    Vibration.vibrate(12);
     setLikedCount((p) => p + 1);
     setSwipedCount((p) => p + 1);
     if (isRoomMode && roomId && user) {
@@ -190,6 +192,7 @@ export function useArena(options: UseArenaOptions = {}) {
   }, [movies.length, checkAndPrefetch, currentIndex, isRoomMode, roomId, roomMovieIds, topCardX, user]);
 
   const handleSwipeLeft = useCallback(() => {
+    Vibration.vibrate(10);
     setSwipedCount((p) => p + 1);
     if (isRoomMode && roomId && user) {
       const currentRoomMovieId = roomMovieIds[currentIndex];
@@ -242,6 +245,7 @@ export function useArena(options: UseArenaOptions = {}) {
     isModalVisible,
     matchedMovie,
     roomId,
+    roomMovieIds,
     roomCode: roomCodeState,
     isRoomMode,
     topCardX,

@@ -82,6 +82,8 @@ async function fetchRoomQueue(input: CreateRoomInput) {
       certification: input.certification,
       certificationCountry: input.certificationCountry,
       region: input.region,
+      releaseDateGte: input.releaseDateGte,
+      releaseDateLte: input.releaseDateLte,
     });
 
     if (!response?.results?.length) {
@@ -624,6 +626,97 @@ export const roomService = {
     }
 
     return { streakDays, topGenreId };
+  },
+
+  getGenreBreakdown: async (userId: string): Promise<Record<number, number>> => {
+    const { data: likedSwipes, error: swipeErr } = await supabase
+      .from('swipes')
+      .select('room_movie_id')
+      .eq('user_id', userId)
+      .eq('liked', true);
+
+    if (swipeErr) throw swipeErr;
+    if (!likedSwipes || likedSwipes.length === 0) return {};
+
+    const movieIds = likedSwipes.map((s) => s.room_movie_id);
+    const { data: movies, error: movErr } = await supabase
+      .from('room_movies')
+      .select('genre_ids')
+      .in('id', movieIds);
+
+    if (movErr) throw movErr;
+
+    const tally: Record<number, number> = {};
+    (movies ?? []).forEach((m) => {
+      for (const gid of ((m.genre_ids ?? []) as number[])) {
+        tally[gid] = (tally[gid] ?? 0) + 1;
+      }
+    });
+    return tally;
+  },
+
+  getFavoritePartner: async (
+    userId: string,
+  ): Promise<{ name: string; matchCount: number; sessions: number; overlap: number } | null> => {
+    const { data: myRooms, error: roomsErr } = await supabase
+      .from('room_users')
+      .select('room_id')
+      .eq('user_id', userId);
+
+    if (roomsErr) throw roomsErr;
+    const roomIds = Array.from(new Set((myRooms ?? []).map((r) => r.room_id)));
+    if (roomIds.length === 0) return null;
+
+    const { data: others, error: othersErr } = await supabase
+      .from('room_users')
+      .select('room_id, user_id')
+      .in('room_id', roomIds)
+      .neq('user_id', userId);
+
+    if (othersErr) throw othersErr;
+    if (!others || others.length === 0) return null;
+
+    const partnerByRoom = new Map<string, string>();
+    const sessionTally = new Map<string, number>();
+    others.forEach((o) => {
+      partnerByRoom.set(o.room_id, o.user_id);
+      sessionTally.set(o.user_id, (sessionTally.get(o.user_id) ?? 0) + 1);
+    });
+
+    const { data: matches, error: matchErr } = await supabase
+      .from('matches')
+      .select('room_id')
+      .in('room_id', roomIds);
+
+    if (matchErr) throw matchErr;
+
+    const matchTally = new Map<string, number>();
+    (matches ?? []).forEach((m) => {
+      const partner = partnerByRoom.get(m.room_id);
+      if (partner) matchTally.set(partner, (matchTally.get(partner) ?? 0) + 1);
+    });
+
+    // Pick the partner with the most matches, falling back to most shared sessions.
+    let topPartner: string | null = null;
+    let topScore = -1;
+    sessionTally.forEach((sessions, partner) => {
+      const score = (matchTally.get(partner) ?? 0) * 1000 + sessions;
+      if (score > topScore) {
+        topScore = score;
+        topPartner = partner;
+      }
+    });
+
+    if (!topPartner) return null;
+
+    const sessions = sessionTally.get(topPartner) ?? 0;
+    const matchCount = matchTally.get(topPartner) ?? 0;
+    const overlap = sessions > 0 ? Math.min(100, Math.round((matchCount / sessions) * 100)) : 0;
+
+    const profiles = await roomService.getProfilesByUserIds([topPartner]);
+    const name = profiles[0]?.display_name ?? `Partner ${String(topPartner).slice(0, 4)}`;
+
+    return { name, matchCount, sessions, overlap };
   },
 
   getRecentMatches: async (

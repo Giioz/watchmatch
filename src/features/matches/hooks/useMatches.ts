@@ -17,6 +17,7 @@ export function useMatches() {
   const [matchCount, setMatchCount] = useState(0);
   const [topGenreId, setTopGenreId] = useState<number | null>(null);
   const [streakDays, setStreakDays] = useState(0);
+  const [favoritePartner, setFavoritePartner] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,15 +29,17 @@ export function useMatches() {
     }
     try {
       setError(null);
-      const [history, stats, streakTaste] = await Promise.all([
+      const [history, stats, streakTaste, partner] = await Promise.all([
         roomService.getRecentMatches(user.id, 60),
         roomService.getUserStats(user.id),
         roomService.getStreakAndTaste(user.id),
+        roomService.getFavoritePartner(user.id),
       ]);
       setMatches(history);
       setMatchCount(stats.matchCount);
       setTopGenreId(streakTaste.topGenreId);
       setStreakDays(streakTaste.streakDays);
+      setFavoritePartner(partner?.name ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load matches.');
     } finally {
@@ -51,5 +54,5 @@ export function useMatches() {
     }, [refresh]),
   );
 
-  return { matches, matchCount, topGenreId, streakDays, loading, error, user };
+  return { matches, matchCount, topGenreId, streakDays, favoritePartner, loading, error, user };
 }

@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  Vibration,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -45,6 +46,7 @@ export default function ArenaScreenContent() {
     matchedMovie,
     roomCode,
     roomId,
+    roomMovieIds,
     isRoomMode,
     topCardX,
     handleSwipeLeft,
@@ -53,6 +55,8 @@ export default function ArenaScreenContent() {
     openDetails,
     closeDetails,
   } = useArena({ roomCode: code?.toUpperCase() });
+
+  const [consolationTitles, setConsolationTitles] = React.useState<string[]>([]);
 
   const visibleMovies = movies.slice(
     currentIndex,
@@ -135,7 +139,8 @@ export default function ArenaScreenContent() {
 
   React.useEffect(() => {
     if (!matchedMovie) return;
-    
+
+    Vibration.vibrate([0, 70, 60, 120]);
     setShowCelebration(true);
     
     const timeout = setTimeout(() => {
@@ -154,6 +159,28 @@ export default function ArenaScreenContent() {
     
     return () => clearTimeout(timeout);
   }, [matchedMovie, roomId, router]);
+
+  React.useEffect(() => {
+    if (!isNoMatch || !roomId) return;
+    let active = true;
+    roomService
+      .getLikedRoomMovieIds(roomId)
+      .then((ids) => {
+        if (!active) return;
+        const titles = ids
+          .map((id) => {
+            const idx = roomMovieIds.indexOf(id);
+            return idx >= 0 ? movies[idx]?.title ?? movies[idx]?.name : undefined;
+          })
+          .filter((t): t is string => Boolean(t))
+          .slice(0, 3);
+        setConsolationTitles(titles);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [isNoMatch, roomId, roomMovieIds, movies]);
 
   React.useEffect(() => {
     if (!isRoomMode || !roomId) return;
@@ -228,6 +255,7 @@ export default function ArenaScreenContent() {
           <ArenaNoMatchState
             roundLoading={roundLoading}
             roundError={roundError}
+            sharedLikes={consolationTitles}
             onRunAgain={handleRunAgain}
             onSecondRoundLiked={handleSecondRoundLiked}
           />
@@ -276,6 +304,14 @@ export default function ArenaScreenContent() {
         visible={isModalVisible}
         movie={selectedMovie}
         onClose={closeDetails}
+        onLike={() => {
+          closeDetails();
+          handleSwipeRight();
+        }}
+        onPass={() => {
+          closeDetails();
+          handleSwipeLeft();
+        }}
       />
 
       <ArenaSessionModals
