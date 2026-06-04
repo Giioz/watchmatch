@@ -11,10 +11,11 @@ import ProfileFeatureList from './ProfileFeatureList';
 import ProfileHeader from './ProfileHeader';
 import ProfileSignOutButton from './ProfileSignOutButton';
 import ProfileStats from './ProfileStats';
+import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar';
 import { useProfile } from '../hooks/useProfile';
 
 export default function ProfileScreenContent() {
-  const { router, user, loading, signOut } = useProfile();
+  const { user, loading, stats, signOut } = useProfile();
 
   if (loading || !user) {
     return (
@@ -34,8 +35,13 @@ export default function ProfileScreenContent() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <ProfileHeader user={user} onBack={() => router.back()} />
-        <ProfileStats />
+        <ProfileHeader user={user} />
+        <ProfileStats
+          matches={stats.matches}
+          rooms={stats.rooms}
+          streakDays={stats.streakDays}
+          loading={stats.loading}
+        />
         <ProfileFeatureList />
         <ProfileSignOutButton onPress={signOut} />
       </ScrollView>
@@ -62,7 +68,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   scrollContent: {
-    paddingBottom: 12,
+    paddingBottom: TAB_BAR_HEIGHT + 40,
   },
   orbTop: {
     position: 'absolute',

@@ -1,18 +1,25 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-const stats = [
-  { label: 'Matches', value: '0' },
-  { label: 'Rooms', value: '0' },
-  { label: 'Friends', value: 'Soon' },
-];
+interface ProfileStatsProps {
+  matches: number;
+  rooms: number;
+  streakDays: number;
+  loading?: boolean;
+}
 
-export default function ProfileStats() {
+export default function ProfileStats({ matches, rooms, streakDays, loading }: ProfileStatsProps) {
+  const stats = [
+    { label: 'Matches', value: matches },
+    { label: 'Rooms', value: rooms },
+    { label: 'Streak', value: streakDays },
+  ];
+
   return (
     <View style={styles.container}>
       {stats.map((stat) => (
         <View key={stat.label} style={styles.stat}>
-          <Text style={styles.value}>{stat.value}</Text>
+          <Text style={styles.value}>{loading ? '··' : stat.value}</Text>
           <Text style={styles.label}>{stat.label}</Text>
         </View>
       ))}

@@ -490,6 +490,61 @@ export const roomService = {
     return count ?? 0;
   },
 
+  getActiveRoomsForUser: async (
+    userId: string,
+  ): Promise<(Room & { participantCount: number })[]> => {
+    const { data: memberships, error: memError } = await supabase
+      .from('room_users')
+      .select('room_id')
+      .eq('user_id', userId)
+      .neq('status', 'left');
+
+    if (memError) throw memError;
+
+    const roomIds = Array.from(new Set((memberships ?? []).map((m) => m.room_id)));
+    if (roomIds.length === 0) return [];
+
+    const { data: rooms, error: roomsError } = await supabase
+      .from('rooms')
+      .select('*')
+      .in('id', roomIds)
+      .in('status', ['waiting', 'swiping'])
+      .order('created_at', { ascending: false })
+      .returns<Room[]>();
+
+    if (roomsError) throw roomsError;
+    if (!rooms || rooms.length === 0) return [];
+
+    const { data: members, error: countError } = await supabase
+      .from('room_users')
+      .select('room_id, status')
+      .in('room_id', rooms.map((r) => r.id))
+      .neq('status', 'left');
+
+    if (countError) throw countError;
+
+    const counts = new Map<string, number>();
+    (members ?? []).forEach((m) => {
+      counts.set(m.room_id, (counts.get(m.room_id) ?? 0) + 1);
+    });
+
+    return rooms.map((room) => ({
+      ...room,
+      participantCount: counts.get(room.id) ?? 0,
+    }));
+  },
+
+  getRoomCountForUser: async (userId: string): Promise<number> => {
+    const { data, error } = await supabase
+      .from('room_users')
+      .select('room_id')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+
+    return new Set((data ?? []).map((r) => r.room_id)).size;
+  },
+
   getUserStats: async (userId: string): Promise<{ matchCount: number }> => {
     const { data: userRooms, error: roomsError } = await supabase
       .from('room_users')
@@ -571,7 +626,10 @@ export const roomService = {
     return { streakDays, topGenreId };
   },
 
-  getRecentMatches: async (userId: string): Promise<(Match & { movie: RoomMovie })[]> => {
+  getRecentMatches: async (
+    userId: string,
+    limit = 10,
+  ): Promise<(Match & { movie: RoomMovie })[]> => {
     const { data: userRooms, error: roomsError } = await supabase
       .from('room_users')
       .select('room_id')
@@ -588,7 +646,7 @@ export const roomService = {
       .select(`*, room_movies:room_movie_id(*)`)
       .in('room_id', roomIds)
       .order('matched_at', { ascending: false })
-      .limit(10);
+      .limit(limit);
 
     if (error) throw error;
 

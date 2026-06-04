@@ -17,11 +17,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { roomService } from '@/services/roomService';
 
+import { Ionicons } from '@expo/vector-icons';
 import { useHomeDashboard } from '../hooks/useHomeDashboard';
 import { useHomeAnimations } from '../hooks/useHomeAnimations';
+import { useActiveRooms } from '@/features/room/hooks/useActiveRooms';
+import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar';
 import StreakWidget from './StreakWidget';
 import RecentMatchesScroll from './RecentMatchesScroll';
-import HomeActionButtons from './HomeActionButtons';
 import HomeMovieBottomSheet from './HomeMovieBottomSheet';
 import HomeProfileButton from './HomeProfileButton';
 import { TMDBMediaItem } from '@/types/movie';
@@ -56,6 +58,8 @@ export default function HomeScreenContent() {
   const router = useRouter();
   const { matchCount, recentMatches, streakDays, topGenreId, statsLoading } = useHomeDashboard();
   const { user, loading: loadingAuth } = useAuthSession();
+  const { rooms: activeRooms } = useActiveRooms();
+  const activeRoom = activeRooms[0] ?? null;
 
   const [selectedMovie, setSelectedMovie] = useState<TMDBMediaItem | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -120,7 +124,7 @@ export default function HomeScreenContent() {
         >
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 24 }}
+            contentContainerStyle={{ paddingBottom: TAB_BAR_HEIGHT + 32 }}
           >
             {/* Header row: Title + Profile */}
             <Animated.View style={[styles.headerRow, { opacity: headerAnim }]}>
@@ -150,10 +154,33 @@ export default function HomeScreenContent() {
               </Animated.View>
             )}
 
+            {/* Active room banner */}
+            {user && activeRoom && (
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => router.push(`/room/${activeRoom.code}`)}
+                style={styles.activeBanner}
+              >
+                <View style={styles.activeBannerDot} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.activeBannerLabel}>Active room</Text>
+                  <Text style={styles.activeBannerText}>
+                    You have a live room · {activeRoom.code}
+                  </Text>
+                </View>
+                <Ionicons name="arrow-forward" size={18} color="#c4b5fd" />
+              </TouchableOpacity>
+            )}
+
             {/* Recent Matches section */}
             {user && (
               <Animated.View style={[{ marginTop: 28 }, { opacity: cardsAnim }]}>
-                <Text style={styles.sectionTitle}>Recent Matches</Text>
+                <View style={styles.sectionHeaderRow}>
+                  <Text style={styles.sectionTitle}>Recent Matches</Text>
+                  <TouchableOpacity onPress={() => router.push('/matches')} activeOpacity={0.7}>
+                    <Text style={styles.seeAll}>See all</Text>
+                  </TouchableOpacity>
+                </View>
                 {devError && (
                   <View style={styles.devErrorWrap}>
                     <Text style={styles.devErrorText}>{devError}</Text>
@@ -163,14 +190,28 @@ export default function HomeScreenContent() {
               </Animated.View>
             )}
 
-            {/* Action Buttons */}
-            <Animated.View style={[{ marginTop: 28 }, { opacity: actionsAnim }]}>
-              <HomeActionButtons
-                onCreateRoom={() => router.push('/create-room')}
-                onSignIn={() => router.push('/auth')}
-                onJoinRoom={(code) => router.push(`/room/${code}`)}
-                showAuthPrompt={!loadingAuth && !user}
-              />
+            {/* Primary CTA → Rooms tab (the action center) */}
+            <Animated.View style={[{ marginTop: 28, paddingHorizontal: 24 }, { opacity: actionsAnim }]}>
+              {user ? (
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  onPress={() => router.push('/rooms')}
+                  style={styles.pickButton}
+                >
+                  <Ionicons name="play-circle-outline" size={20} color="#fff" />
+                  <Text style={styles.pickButtonText}>Pick tonight&apos;s film</Text>
+                </TouchableOpacity>
+              ) : (
+                !loadingAuth && (
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() => router.push('/auth')}
+                    style={styles.pickButton}
+                  >
+                    <Text style={styles.pickButtonText}>Sign in to unlock</Text>
+                  </TouchableOpacity>
+                )
+              )}
             </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -199,6 +240,12 @@ const styles = StyleSheet.create({
   topTagline: { fontSize: 11, letterSpacing: 3.5, textTransform: 'uppercase', color: '#7c3aed', fontWeight: '500', marginBottom: 8 },
   mainTitle: { fontSize: 44, fontWeight: '300', color: '#f1f0f8', lineHeight: 46, letterSpacing: -1 },
   subTagline: { marginTop: 8, fontSize: 13, color: '#52525b', fontWeight: '300', letterSpacing: 0.4 },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+  },
   sectionTitle: {
     color: '#71717a',
     fontSize: 11,
@@ -206,7 +253,61 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1.2,
     marginBottom: 4,
-    paddingHorizontal: 24,
+  },
+  seeAll: {
+    color: '#a78bfa',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  activeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginHorizontal: 24,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(123,92,240,0.4)',
+    backgroundColor: 'rgba(123,92,240,0.12)',
+  },
+  activeBannerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#a78bfa',
+    shadowColor: '#a78bfa',
+    shadowOpacity: 0.9,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  activeBannerLabel: {
+    color: '#a78bfa',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  activeBannerText: {
+    color: '#e4e4e7',
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  pickButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#7c3aed',
+    paddingVertical: 16,
+    borderRadius: 14,
+  },
+  pickButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
   devBadge: { position: 'absolute', top: 56, right: 24, backgroundColor: '#27272a', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, zIndex: 20 },
   devRoomBadge: {

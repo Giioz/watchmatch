@@ -5,7 +5,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface ProfileHeaderProps {
   user: User;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 function getProfileLabel(user: User) {
@@ -21,9 +21,11 @@ function getInitial(user: User) {
 export default function ProfileHeader({ user, onBack }: ProfileHeaderProps) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={onBack} activeOpacity={0.75} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={24} color="#f1f0f8" />
-      </TouchableOpacity>
+      {onBack && (
+        <TouchableOpacity onPress={onBack} activeOpacity={0.75} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color="#f1f0f8" />
+        </TouchableOpacity>
+      )}
 
       <View style={styles.identity}>
         <View style={styles.avatar}>

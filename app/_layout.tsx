@@ -30,9 +30,8 @@ export default function RootLayout() {
     // flex: 1 სავალდებულოა, თორემ ეკრანი ცარიელი იქნება
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="auth" />
-        <Stack.Screen name="profile" />
         <Stack.Screen name="create-room" />
         <Stack.Screen name="room/[code]" />
         <Stack.Screen name="arena" />
