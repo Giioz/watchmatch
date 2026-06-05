@@ -1,13 +1,15 @@
 import React from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Match, RoomMovie } from '@/types/database';
 
 interface RecentMatchesScrollProps {
   recentMatches: (Match & { movie: RoomMovie })[];
   loading: boolean;
+  onPressMovie: (movie: RoomMovie) => void;
 }
 
-export default function RecentMatchesScroll({ recentMatches, loading }: RecentMatchesScrollProps) {
+export default function RecentMatchesScroll({ recentMatches, loading, onPressMovie }: RecentMatchesScrollProps) {
   if (loading) {
     return (
       <View style={styles.loadingWrap}>
@@ -35,12 +37,17 @@ export default function RecentMatchesScroll({ recentMatches, loading }: RecentMa
           ? `https://image.tmdb.org/t/p/w200${match.movie.poster_path}`
           : null;
         return (
-          <TouchableOpacity key={match.id} style={styles.item} activeOpacity={0.8}>
+          <TouchableOpacity
+            key={match.id}
+            style={styles.item}
+            activeOpacity={0.8}
+            onPress={() => onPressMovie(match.movie)}
+          >
             {posterUri ? (
               <Image source={{ uri: posterUri }} style={styles.poster} resizeMode="cover" />
             ) : (
               <View style={styles.posterFallback}>
-                <Text style={{ fontSize: 36 }}>🎬</Text>
+                <Ionicons name="film-outline" size={32} color="#3f3f46" />
               </View>
             )}
             <View style={styles.badge}>

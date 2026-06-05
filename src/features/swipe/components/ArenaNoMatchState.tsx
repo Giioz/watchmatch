@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface ArenaNoMatchStateProps {
   roundLoading: null | "rerun" | "liked";
@@ -16,7 +17,7 @@ export default function ArenaNoMatchState({
 }: ArenaNoMatchStateProps) {
   return (
     <View style={styles.doneContainer}>
-      <Text style={{ fontSize: 40 }}>💔</Text>
+      <Ionicons name="heart-dislike-outline" size={48} color="#f53f5e" style={{ marginBottom: 12 }} />
       <Text style={styles.doneText}>No match this round</Text>
       <TouchableOpacity
         onPress={onRunAgain}

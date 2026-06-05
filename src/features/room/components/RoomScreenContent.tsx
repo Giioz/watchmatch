@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ActivityIndicator, Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, SafeAreaView, Text, View, TouchableOpacity, Share, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { Profile, Room, RoomUser } from "@/types/database";
 import { roomService } from "@/services/roomService";
@@ -140,14 +141,18 @@ export default function RoomScreenContent() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Ambient Orbs */}
       <View style={styles.orbTop} pointerEvents="none" />
       <View style={styles.orbBottom} pointerEvents="none" />
+      
       <RoomTopBar onBack={handleLeaveRoom} />
 
       {loading ? (
         <View style={styles.centerBlock}>
           <ActivityIndicator size="large" color="#7c3aed" />
-          <Text style={styles.loadingText}>Joining room {roomCode || "----"}</Text>
+          <Text style={styles.loadingText}>
+            Joining room {roomCode || "----"}
+          </Text>
         </View>
       ) : error ? (
         <View style={styles.centerBlock}>
@@ -155,17 +160,98 @@ export default function RoomScreenContent() {
         </View>
       ) : (
         <View style={styles.content}>
-          <Text style={styles.eyebrow}>Waiting Room</Text>
-          <Text style={styles.code}>{roomCode}</Text>
-          <Text style={styles.subtitle}>Share this code with your partner to join.</Text>
-          <RoomParticipantsCard room={room} members={members} profilesById={profilesById} participantCount={participantCount} readyCount={readyCount} />
-          <View style={styles.statusCard}>
-            <Text style={styles.statusLabel}>Room status</Text>
-            <Text style={styles.statusValue}>{startingMatch ? "starting" : room?.status ?? "waiting"}</Text>
+          {/* Header Title */}
+          <View style={styles.headerSection}>
+            <Text style={styles.eyebrow}>
+              WAITING ROOM
+            </Text>
+            <Text style={styles.title}>
+              Co-Watch Match
+            </Text>
           </View>
+
+          {/* Movie Ticket Room Code Card */}
+          <View style={styles.ticketCard}>
+            {/* Top half: Ticket Details */}
+            <View style={styles.ticketTop}>
+              <View style={styles.ticketHeaderRow}>
+                <Text style={styles.ticketLabel}>
+                  SESSION TICKET
+                </Text>
+                <View style={styles.statusBadge}>
+                  <View style={styles.statusBadgeDot} />
+                  <Text style={styles.statusBadgeText}>
+                    {room?.status === "waiting" ? "Waiting" : "Swiping"}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.ticketBody}>
+                <View>
+                  <Text style={styles.codeLabel}>
+                    ROOM CODE
+                  </Text>
+                  <Text style={styles.codeText}>
+                    {roomCode}
+                  </Text>
+                </View>
+                
+                {/* Share Button */}
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    Share.share({
+                      message: `Join my WatchMatch co-watching session! Code: ${roomCode}`,
+                    }).catch(() => {});
+                  }}
+                  style={styles.shareButton}
+                >
+                  <Ionicons name="share-outline" size={18} color="#a78bfa" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Ticket Dashed Separator with Left/Right cutouts */}
+            <View style={styles.ticketDivider}>
+              <View style={styles.leftCutout} />
+              <View style={styles.dashedLine} />
+              <View style={styles.rightCutout} />
+            </View>
+
+            {/* Bottom half: Session Info */}
+            <View style={styles.ticketBottom}>
+              <View style={styles.ticketBottomInfo}>
+                <Ionicons name="film-outline" size={15} color="#71717a" style={{ marginRight: 6 }} />
+                <Text style={styles.ticketBottomInfoText}>
+                  {room?.content_type === "movie" ? "Movies Pool" : "TV Shows Pool"}
+                </Text>
+              </View>
+              
+              <Text style={styles.ticketBottomSharePrompt}>
+                SHARE WITH PARTNER
+              </Text>
+            </View>
+          </View>
+
+          {/* Connected Participants Side-by-side Grid */}
+          <RoomParticipantsCard 
+            room={room} 
+            members={members} 
+            profilesById={profilesById} 
+            participantCount={participantCount} 
+            readyCount={readyCount} 
+          />
+
+          {/* Ended Session Warning */}
           {(room?.status === "finished" || hasLeftMember) && (
-            <Text style={styles.errorText}>Session ended because one player left. Create a new room.</Text>
+            <View style={styles.warningCard}>
+              <Text style={styles.warningText}>
+                Session ended because one player left. Create a new room.
+              </Text>
+            </View>
           )}
+
+          {/* Action Buttons Panel */}
           <RoomActionsPanel
             room={room}
             hasLeftMember={hasLeftMember}
@@ -184,17 +270,223 @@ export default function RoomScreenContent() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0a0a0f" },
-  orbTop: { position: "absolute", width: 260, height: 260, borderRadius: 130, backgroundColor: "#7c3aed", opacity: 0.12, top: -90, right: -80 },
-  orbBottom: { position: "absolute", width: 200, height: 200, borderRadius: 100, backgroundColor: "#4f46e5", opacity: 0.1, bottom: -70, left: -60 },
-  centerBlock: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 },
-  loadingText: { marginTop: 12, color: "#71717a", fontSize: 12, textTransform: "uppercase", letterSpacing: 1.4 },
-  errorText: { color: "#fca5a5", fontSize: 13, lineHeight: 19, textAlign: "center" },
-  content: { flex: 1, paddingHorizontal: 24, paddingTop: 26 },
-  eyebrow: { color: "#7c3aed", fontSize: 11, fontWeight: "600", letterSpacing: 2.4, textTransform: "uppercase", marginBottom: 8 },
-  code: { color: "#f4f4f5", fontSize: 44, fontWeight: "800", letterSpacing: 2 },
-  subtitle: { color: "#71717a", fontSize: 13, marginTop: 8, marginBottom: 24 },
-  statusCard: { borderRadius: 14, borderWidth: 1, borderColor: "#27272a", backgroundColor: "#111115", paddingHorizontal: 16, paddingVertical: 16, marginBottom: 14 },
-  statusLabel: { color: "#a1a1aa", fontSize: 12, marginBottom: 6 },
-  statusValue: { color: "#c4b5fd", fontSize: 16, fontWeight: "700", textTransform: "capitalize" },
+  container: {
+    flex: 1,
+    backgroundColor: "#0a0a0f",
+  },
+  orbTop: {
+    position: "absolute",
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: "#7c3aed",
+    opacity: 0.1,
+    top: -90,
+    right: -80,
+  },
+  orbBottom: {
+    position: "absolute",
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: "#4f46e5",
+    opacity: 0.08,
+    bottom: -70,
+    left: -60,
+  },
+  centerBlock: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 28,
+  },
+  loadingText: {
+    marginTop: 14,
+    color: "#71717a",
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+  },
+  errorText: {
+    color: "#fca5a5",
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: "center",
+    fontWeight: "500",
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 16,
+  },
+  headerSection: {
+    marginBottom: 24,
+    paddingHorizontal: 4,
+  },
+  eyebrow: {
+    fontSize: 10,
+    color: "#a78bfa",
+    fontWeight: "700",
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#ffffff",
+    letterSpacing: -0.5,
+  },
+  ticketCard: {
+    backgroundColor: "#13131c",
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.04)",
+    overflow: "hidden",
+    marginBottom: 24,
+    shadowColor: "#000000",
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8,
+  },
+  ticketTop: {
+    padding: 24,
+  },
+  ticketHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  ticketLabel: {
+    fontSize: 10,
+    color: "#71717a",
+    fontWeight: "700",
+    letterSpacing: 1.5,
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(167, 139, 250, 0.1)",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 99,
+    borderWidth: 1,
+    borderColor: "rgba(167, 139, 250, 0.25)",
+  },
+  statusBadgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#a78bfa",
+    marginRight: 8,
+  },
+  statusBadgeText: {
+    fontSize: 10,
+    color: "#c4b5fd",
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  ticketBody: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  codeLabel: {
+    fontSize: 11,
+    color: "#52525b",
+    fontWeight: "700",
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  codeText: {
+    fontSize: 40,
+    fontWeight: "900",
+    color: "#ffffff",
+    letterSpacing: 6,
+  },
+  shareButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: "#1c1c28",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.05)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ticketDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    height: 24,
+    overflow: "hidden",
+  },
+  leftCutout: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#0a0a0f",
+    marginLeft: -12,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.04)",
+  },
+  rightCutout: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#0a0a0f",
+    marginRight: -12,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.04)",
+  },
+  dashedLine: {
+    flex: 1,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+    marginHorizontal: 4,
+    height: 0,
+  },
+  ticketBottom: {
+    backgroundColor: "rgba(24, 24, 37, 0.45)",
+    paddingHorizontal: 24,
+    paddingVertical: 18,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  ticketBottomInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ticketBottomInfoText: {
+    fontSize: 12,
+    color: "#8e8e9f",
+    fontWeight: "600",
+  },
+  ticketBottomSharePrompt: {
+    fontSize: 11,
+    color: "#52525b",
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  warningCard: {
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.2)",
+  },
+  warningText: {
+    color: "#fca5a5",
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: "center",
+    fontWeight: "500",
+  },
 });

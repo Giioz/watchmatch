@@ -28,18 +28,14 @@ export default function HomeProfileButton({ user, onPress }: HomeProfileButtonPr
 
 const styles = StyleSheet.create({
   button: {
-    position: 'absolute',
-    top: 56,
-    right: 24,
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(24,24,27,0.96)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(167,139,250,0.45)',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 12,
   },
   initial: {
     color: '#f4f4f5',

@@ -1,18 +1,32 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
-const stats = [
-  { label: 'Matches', value: '0' },
-  { label: 'Rooms', value: '0' },
-  { label: 'Friends', value: 'Soon' },
-];
+interface ProfileStatsProps {
+  matchCount?: number;
+  roomCount?: number;
+  loading?: boolean;
+}
 
-export default function ProfileStats() {
+export default function ProfileStats({
+  matchCount = 0,
+  roomCount = 0,
+  loading = false,
+}: ProfileStatsProps) {
+  const statsList = [
+    { label: 'Matches', value: loading ? '...' : String(matchCount) },
+    { label: 'Rooms', value: loading ? '...' : String(roomCount) },
+    { label: 'Friends', value: 'Soon' },
+  ];
+
   return (
     <View style={styles.container}>
-      {stats.map((stat) => (
+      {statsList.map((stat) => (
         <View key={stat.label} style={styles.stat}>
-          <Text style={styles.value}>{stat.value}</Text>
+          {loading && stat.value === '...' ? (
+            <ActivityIndicator size="small" color="#c4b5fd" style={styles.loader} />
+          ) : (
+            <Text style={styles.value}>{stat.value}</Text>
+          )}
           <Text style={styles.label}>{stat.label}</Text>
         </View>
       ))}
@@ -42,6 +56,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
     marginBottom: 5,
+  },
+  loader: {
+    marginBottom: 5,
+    height: 25,
   },
   label: {
     color: '#71717a',

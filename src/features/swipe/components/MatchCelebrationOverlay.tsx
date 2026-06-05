@@ -10,6 +10,7 @@ import Animated, {
   withRepeat,
   Easing,
 } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import { TMDBMediaItem } from '@/types/movie';
 
 const { width, height } = Dimensions.get('window');
@@ -80,7 +81,7 @@ export default function MatchCelebrationOverlay({ movie, visible }: MatchCelebra
           <Image source={{ uri: posterUri }} style={styles.poster} resizeMode="cover" />
         ) : (
           <View style={styles.posterFallback}>
-            <Text style={{ fontSize: 64 }}>🎬</Text>
+            <Ionicons name="film-outline" size={64} color="#3f3f46" />
           </View>
         )}
         <View style={styles.overlay} />

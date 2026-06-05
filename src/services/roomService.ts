@@ -490,14 +490,14 @@ export const roomService = {
     return count ?? 0;
   },
 
-  getUserStats: async (userId: string): Promise<{ matchCount: number }> => {
+  getUserStats: async (userId: string): Promise<{ matchCount: number; roomCount: number }> => {
     const { data: userRooms, error: roomsError } = await supabase
       .from('room_users')
       .select('room_id')
       .eq('user_id', userId);
 
     if (roomsError) throw roomsError;
-    if (!userRooms || userRooms.length === 0) return { matchCount: 0 };
+    if (!userRooms || userRooms.length === 0) return { matchCount: 0, roomCount: 0 };
 
     const roomIds = userRooms.map((r) => r.room_id);
     
@@ -508,7 +508,10 @@ export const roomService = {
 
     if (countError) throw countError;
 
-    return { matchCount: count ?? 0 };
+    return {
+      matchCount: count ?? 0,
+      roomCount: userRooms.length,
+    };
   },
 
   getStreakAndTaste: async (userId: string): Promise<{ streakDays: number; topGenreId: number | null }> => {

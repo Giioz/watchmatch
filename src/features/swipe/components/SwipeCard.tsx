@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, { SharedValue } from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
+import { Ionicons } from '@expo/vector-icons';
 import { TMDBMediaItem } from '@/types/movie';
 import { useSwipe } from '../hooks/useSwipe';
 
@@ -111,7 +112,7 @@ export default function SwipeCard({
         <Image source={{ uri: posterUri }} style={styles.poster} resizeMode="cover" />
       ) : (
         <View style={styles.posterFallback}>
-          <Text style={{ fontSize: 56 }}>🎬</Text>
+          <Ionicons name="film-outline" size={56} color="#3f3f46" />
         </View>
       )}
 
@@ -126,14 +127,16 @@ export default function SwipeCard({
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <View style={[
               styles.ratingBadge, 
-              { backgroundColor: ratingTheme.bg, borderColor: ratingTheme.border }
+              { backgroundColor: ratingTheme.bg, borderColor: ratingTheme.border, flexDirection: 'row', alignItems: 'center', gap: 4 }
             ]}>
-              <Text style={[styles.ratingText, { color: ratingTheme.text }]}>★ {rating}</Text>
+              <Ionicons name="star" size={11} color={ratingTheme.text} />
+              <Text style={[styles.ratingText, { color: ratingTheme.text }]}>{rating}</Text>
             </View>
             
             {isMasterpiece && (
-              <View style={styles.masterpieceBadge}>
-                <Text style={styles.masterpieceBadgeText}>💎 Masterpiece</Text>
+              <View style={[styles.masterpieceBadge, { flexDirection: 'row', alignItems: 'center', gap: 4 }]}>
+                <Ionicons name="ribbon-outline" size={12} color="#fbbf24" />
+                <Text style={styles.masterpieceBadgeText}>Masterpiece</Text>
               </View>
             )}
           </View>

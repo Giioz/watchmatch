@@ -83,12 +83,19 @@ export default function MatchTakeover() {
           <Image source={{ uri: posterUrl }} style={styles.poster} resizeMode="cover" />
         ) : (
           <View style={styles.posterFallback}>
-            <Text style={{ fontSize: 52 }}>🎬</Text>
+            <Ionicons name="film-outline" size={52} color="#3f3f46" />
           </View>
         )}
 
         <View style={styles.metaRow}>
-          {rating ? <Text style={styles.metaBadge}>⭐ {Number(rating).toFixed(1)}</Text> : null}
+          {rating ? (
+            <View style={[styles.metaBadge, { flexDirection: 'row', alignItems: 'center', gap: 4 }]}>
+              <Ionicons name="star" size={11} color="#facc15" />
+              <Text style={{ color: '#facc15', fontSize: 12, fontWeight: '700' }}>
+                {Number(rating).toFixed(1)}
+              </Text>
+            </View>
+          ) : null}
           {year ? <Text style={styles.metaText}>{year}</Text> : null}
         </View>
         <View style={styles.section}>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface HomeStatsWidgetProps {
   matchCount: number;
@@ -8,7 +9,10 @@ interface HomeStatsWidgetProps {
 export default function HomeStatsWidget({ matchCount }: HomeStatsWidgetProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🔥 Matches Found</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+        <Ionicons name="flame" size={14} color="#a78bfa" style={{ marginRight: 6 }} />
+        <Text style={styles.title}>Matches Found</Text>
+      </View>
       <Text style={styles.count}>{matchCount}</Text>
     </View>
   );

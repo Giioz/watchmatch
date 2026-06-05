@@ -7,26 +7,36 @@ interface CreateRoomFilterFieldProps {
   value: string;
   icon: keyof typeof Ionicons.glyphMap;
   onPress: () => void;
+  onRemove: () => void;
 }
 
-export function CreateRoomFilterField({ label, value, icon, onPress }: CreateRoomFilterFieldProps) {
+export function CreateRoomFilterField({ label, value, icon, onPress, onRemove }: CreateRoomFilterFieldProps) {
   return (
-    <View className="mb-5">
-      <Text className="text-[11px] text-[#9ca3af] uppercase tracking-widest mb-3 font-semibold ml-1">
+    <View className="mb-6">
+      <Text className="text-[10px] text-[#71717a] uppercase tracking-[1.5px] font-bold mb-2 ml-1">
         {label}
       </Text>
       <TouchableOpacity
         onPress={onPress}
-        activeOpacity={0.7}
-        className="flex-row items-center justify-between bg-[#12121a] p-4 rounded-2xl border border-[#ffffff15] border-l-[3px] border-l-[#7c3aed]"
+        activeOpacity={0.78}
+        className="flex-row items-center justify-between bg-[#13131c] px-6 py-5 rounded-2xl border border-[#ffffff08]"
       >
         <View className="flex-row items-center flex-1 pr-4">
-          <Ionicons name={icon} size={18} color="#9ca3af" style={{ marginRight: 12 }} />
-          <Text className="text-[#f1f0f8] text-[15px] font-medium" numberOfLines={1}>
+          <Ionicons name={icon} size={18} color="#a78bfa" style={{ marginRight: 12 }} />
+          <Text className="text-[#f1f0f8] text-[14px] font-semibold" numberOfLines={1}>
             {value}
           </Text>
         </View>
-        <Ionicons name="chevron-down" size={20} color="#9ca3af" />
+        <View className="flex-row items-center gap-3">
+          <Ionicons name="chevron-down" size={16} color="#71717a" />
+          <TouchableOpacity 
+            onPress={(e) => { e.stopPropagation(); onRemove(); }}
+            activeOpacity={0.7}
+            className="w-8 h-8 rounded-full bg-[#181822] border border-[#ffffff0d] items-center justify-center"
+          >
+            <Ionicons name="close" size={14} color="#fca5a5" />
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
     </View>
   );

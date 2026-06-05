@@ -14,7 +14,7 @@ import ProfileStats from './ProfileStats';
 import { useProfile } from '../hooks/useProfile';
 
 export default function ProfileScreenContent() {
-  const { router, user, loading, signOut } = useProfile();
+  const { router, user, loading, loadingStats, stats, signOut } = useProfile();
 
   if (loading || !user) {
     return (
@@ -35,7 +35,11 @@ export default function ProfileScreenContent() {
         contentContainerStyle={styles.scrollContent}
       >
         <ProfileHeader user={user} onBack={() => router.back()} />
-        <ProfileStats />
+        <ProfileStats
+          matchCount={stats?.matchCount}
+          roomCount={stats?.roomCount}
+          loading={loadingStats}
+        />
         <ProfileFeatureList />
         <ProfileSignOutButton onPress={signOut} />
       </ScrollView>

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
@@ -233,15 +234,14 @@ export default function ArenaScreenContent() {
           />
         ) : isDone ? (
           <View style={styles.doneContainer}>
-            <Text style={{ fontSize: 40 }}>🎲</Text>
+            <Ionicons name="checkmark-circle-outline" size={48} color="#a78bfa" style={{ marginBottom: 12 }} />
             <Text style={styles.doneText}>End of this stack!</Text>
             <TouchableOpacity
               onPress={handleRefresh}
-              style={styles.refreshButton}
+              style={[styles.refreshButton, { flexDirection: "row", alignItems: "center", gap: 6 }]}
             >
-              <Text style={{ color: "#fff", fontWeight: "600" }}>
-                Go Again 🔄
-              </Text>
+              <Text style={{ color: "#fff", fontWeight: "600" }}>Go Again</Text>
+              <Ionicons name="refresh" size={14} color="#ffffff" />
             </TouchableOpacity>
           </View>
         ) : (

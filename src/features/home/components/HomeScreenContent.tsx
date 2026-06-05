@@ -5,11 +5,8 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
   Animated,
   StyleSheet,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -17,74 +14,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { roomService } from '@/services/roomService';
 
-import { useHomeDashboard } from '../hooks/useHomeDashboard';
 import { useHomeAnimations } from '../hooks/useHomeAnimations';
-import StreakWidget from './StreakWidget';
-import RecentMatchesScroll from './RecentMatchesScroll';
 import HomeActionButtons from './HomeActionButtons';
-import HomeMovieBottomSheet from './HomeMovieBottomSheet';
 import HomeProfileButton from './HomeProfileButton';
+import TodaysPicks from './TodaysPicks';
+import HomeMovieBottomSheet from './HomeMovieBottomSheet';
 import { TMDBMediaItem } from '@/types/movie';
-
-function formatDevError(error: unknown) {
-  if (error instanceof Error) return error.message;
-
-  if (error && typeof error === 'object') {
-    const maybeDbError = error as {
-      message?: string;
-      code?: string;
-      details?: string;
-      hint?: string;
-    };
-
-    const parts = [
-      maybeDbError.message,
-      maybeDbError.code ? `code: ${maybeDbError.code}` : null,
-      maybeDbError.details,
-      maybeDbError.hint ? `hint: ${maybeDbError.hint}` : null,
-    ].filter(Boolean);
-
-    if (parts.length) {
-      return parts.join(' | ');
-    }
-  }
-
-  return 'Failed to create dev room.';
-}
 
 export default function HomeScreenContent() {
   const router = useRouter();
-  const { matchCount, recentMatches, streakDays, topGenreId, statsLoading } = useHomeDashboard();
   const { user, loading: loadingAuth } = useAuthSession();
 
   const [selectedMovie, setSelectedMovie] = useState<TMDBMediaItem | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isCreatingDevRoom, setIsCreatingDevRoom] = useState(false);
-  const [devError, setDevError] = useState<string | null>(null);
 
   const { headerAnim, cardsAnim, actionsAnim, orb1Style, orb2Style } = useHomeAnimations();
-
-  const handleDevRoomSimulation = async () => {
-    if (!user || isCreatingDevRoom) return;
-
-    setIsCreatingDevRoom(true);
-    setDevError(null);
-
-    try {
-      const { room } = await roomService.createRoomFromFilters({
-        hostId: user.id,
-        contentType: 'movie',
-        genreIds: [28, 35],
-        sessionLimit: 10,
-      });
-
-      router.push(`/room/${room.code}`);
-    } catch (error) {
-      setDevError(formatDevError(error));
-    } finally {
-      setIsCreatingDevRoom(false);
-    }
-  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#0a0a0f' }}>
@@ -92,45 +36,26 @@ export default function HomeScreenContent() {
       <Animated.View style={[styles.orb1, orb1Style]} pointerEvents="none" />
       <Animated.View style={[styles.orb2, orb2Style]} pointerEvents="none" />
 
-      {/* Dev Buttons */}
-      {__DEV__ && (
-        <TouchableOpacity onPress={() => router.push('/arena')} style={styles.devBadge}>
-          <Text style={{ color: '#71717a', fontSize: 11, letterSpacing: 1 }}>DEV: Arena</Text>
-        </TouchableOpacity>
-      )}
-      {__DEV__ && user && (
-        <TouchableOpacity
-          onPress={handleDevRoomSimulation}
-          disabled={isCreatingDevRoom}
-          activeOpacity={0.8}
-          style={styles.devRoomBadge}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
-          {isCreatingDevRoom ? (
-            <ActivityIndicator size="small" color="#f4f4f5" />
-          ) : (
-            <Text style={styles.devRoomBadgeText}>DEV: Simulate Room</Text>
-          )}
-        </TouchableOpacity>
-      )}
-
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
-        >
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 24 }}
-          >
             {/* Header row: Title + Profile */}
             <Animated.View style={[styles.headerRow, { opacity: headerAnim }]}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.topTagline}>Your next watch, decided</Text>
-                <Text style={styles.mainTitle}>
-                  Watch<Text style={{ color: '#a78bfa', fontWeight: '600' }}>Match</Text>
-                </Text>
-                <Text style={styles.subTagline}>Swipe. Match. Watch together.</Text>
+              <View style={styles.titleColumn}>
+                {/* Asymmetric Staggered Logo Stack */}
+                <View style={styles.logoStack}>
+                  <Text style={styles.watchText}>WATCH</Text>
+                  <Text style={styles.matchText}>MATCH</Text>
+                </View>
               </View>
+              
               {user && (
                 <HomeProfileButton
                   user={user}
@@ -139,32 +64,18 @@ export default function HomeScreenContent() {
               )}
             </Animated.View>
 
-            {/* Streak + Taste DNA widget */}
-            {user && (
-              <Animated.View style={{ opacity: cardsAnim }}>
-                <StreakWidget
-                  streakDays={streakDays}
-                  topGenreId={topGenreId}
-                  matchCount={matchCount}
-                />
-              </Animated.View>
-            )}
-
-            {/* Recent Matches section */}
-            {user && (
-              <Animated.View style={[{ marginTop: 28 }, { opacity: cardsAnim }]}>
-                <Text style={styles.sectionTitle}>Recent Matches</Text>
-                {devError && (
-                  <View style={styles.devErrorWrap}>
-                    <Text style={styles.devErrorText}>{devError}</Text>
-                  </View>
-                )}
-                <RecentMatchesScroll recentMatches={recentMatches} loading={statsLoading} />
-              </Animated.View>
-            )}
+            {/* Welcoming Header Section */}
+            <Animated.View style={[styles.welcomeSection, { opacity: headerAnim }]}>
+              <Text style={styles.welcomePrompt}>
+                What are we watching tonight?
+              </Text>
+              <Text style={styles.welcomeSubtext}>
+                No debates. Swipe genres, invite a partner, and agree on a movie in seconds.
+              </Text>
+            </Animated.View>
 
             {/* Action Buttons */}
-            <Animated.View style={[{ marginTop: 28 }, { opacity: actionsAnim }]}>
+            <Animated.View style={[{ marginTop: 16 }, { opacity: actionsAnim }]}>
               <HomeActionButtons
                 onCreateRoom={() => router.push('/create-room')}
                 onSignIn={() => router.push('/auth')}
@@ -172,9 +83,22 @@ export default function HomeScreenContent() {
                 showAuthPrompt={!loadingAuth && !user}
               />
             </Animated.View>
+
+            {/* Today's Picks personalized section */}
+            {user && (
+              <Animated.View style={{ opacity: cardsAnim }}>
+                <TodaysPicks
+                  userId={user.id}
+                  onPressMovie={(movie) => {
+                    setSelectedMovie(movie);
+                    setIsModalVisible(true);
+                  }}
+                />
+              </Animated.View>
+            )}
           </ScrollView>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+
 
       {/* Bottom Sheet */}
       <HomeMovieBottomSheet
@@ -195,10 +119,87 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 48,
     paddingBottom: 4,
+    justifyContent: 'space-between',
   },
-  topTagline: { fontSize: 11, letterSpacing: 3.5, textTransform: 'uppercase', color: '#7c3aed', fontWeight: '500', marginBottom: 8 },
-  mainTitle: { fontSize: 44, fontWeight: '300', color: '#f1f0f8', lineHeight: 46, letterSpacing: -1 },
-  subTagline: { marginTop: 8, fontSize: 13, color: '#52525b', fontWeight: '300', letterSpacing: 0.4 },
+  titleColumn: {
+    flex: 1,
+  },
+  logoStack: {
+    marginBottom: 10,
+  },
+  watchText: {
+    fontSize: 40,
+    fontWeight: '300',
+    color: '#ffffff',
+    letterSpacing: -1.5,
+    lineHeight: 42,
+  },
+  matchText: {
+    fontSize: 40,
+    fontWeight: '900',
+    fontStyle: 'italic',
+    color: '#a78bfa',
+    letterSpacing: -1,
+    lineHeight: 42,
+    marginLeft: 28,
+  },
+  statusChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
+  statusChipActive: {
+    backgroundColor: 'rgba(34, 197, 94, 0.08)',
+    borderColor: 'rgba(34, 197, 94, 0.25)',
+  },
+  statusChipInactive: {
+    backgroundColor: 'rgba(113, 113, 122, 0.08)',
+    borderColor: 'rgba(113, 113, 122, 0.25)',
+  },
+  chipDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  chipDotActive: {
+    backgroundColor: '#22c55e',
+    shadowColor: '#22c55e',
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  chipDotInactive: {
+    backgroundColor: '#71717a',
+  },
+  chipText: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: '#a1a1aa',
+    letterSpacing: 0.8,
+  },
+  welcomeSection: {
+    paddingHorizontal: 24,
+    marginTop: 20,
+    marginBottom: 4,
+  },
+  welcomePrompt: {
+    fontSize: 22,
+    color: '#ffffff',
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    marginBottom: 6,
+  },
+  welcomeSubtext: {
+    fontSize: 14,
+    color: '#94a3b8',
+    lineHeight: 20,
+    fontWeight: '400',
+  },
   sectionTitle: {
     color: '#71717a',
     fontSize: 11,
@@ -208,43 +209,5 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     paddingHorizontal: 24,
   },
-  devBadge: { position: 'absolute', top: 56, right: 24, backgroundColor: '#27272a', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, zIndex: 20 },
-  devRoomBadge: {
-    position: 'absolute',
-    top: 94,
-    right: 24,
-    minWidth: 124,
-    height: 32,
-    backgroundColor: '#1f1f27',
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#3f3f46',
-    zIndex: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  devRoomBadgeText: {
-    color: '#a78bfa',
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.7,
-    textTransform: 'uppercase',
-  },
-  devErrorWrap: {
-    marginHorizontal: 24,
-    marginBottom: 8,
-    backgroundColor: 'rgba(239,68,68,0.1)',
-    borderColor: 'rgba(239,68,68,0.35)',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  devErrorText: {
-    color: '#fca5a5',
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '500',
-  },
+
 });

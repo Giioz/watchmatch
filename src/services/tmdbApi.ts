@@ -65,5 +65,12 @@ export const movieService = {
    */
   getGenres: async (type: 'movie' | 'tv' = 'movie'): Promise<TMDBGenreResponse | null> => {
     return await fetchFromTMDB<TMDBGenreResponse>(`/genre/${type}/list`);
+  },
+
+  /**
+   * ფილმის რეკომენდაციების წამოღება მოცემული ფილმის ID-ის მიხედვით
+   */
+  getRecommendations: async (movieId: number): Promise<TMDBDiscoverResponse | null> => {
+    return await fetchFromTMDB<TMDBDiscoverResponse>(`/movie/${movieId}/recommendations`);
   }
 };

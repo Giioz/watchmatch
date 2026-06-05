@@ -1,6 +1,7 @@
 import { Room } from "@/types/database";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface RoomActionsPanelProps {
   room: Room | null;
@@ -26,69 +27,137 @@ export default function RoomActionsPanel({
   onStartMatch,
 }: RoomActionsPanelProps) {
   return (
-    <>
+    <View style={styles.container}>
+      {/* Ready Button */}
       <TouchableOpacity
         disabled={togglingReady || !room || room.status === "finished" || hasLeftMember}
         onPress={onToggleReady}
+        activeOpacity={0.8}
         style={[styles.readyButton, isCurrentReady && styles.readyButtonActive]}
       >
-        <Text style={styles.readyButtonText}>
-          {togglingReady ? "Updating..." : isCurrentReady ? "Set Not Ready" : "Set Ready"}
-        </Text>
+        {togglingReady ? (
+          <ActivityIndicator size="small" color="#a78bfa" />
+        ) : (
+          <>
+            <Ionicons 
+              name={isCurrentReady ? "checkmark-circle-outline" : "ellipse-outline"} 
+              size={18} 
+              color={isCurrentReady ? "#34d399" : "#71717a"} 
+              style={{ marginRight: 8 }} 
+            />
+            <Text style={[styles.readyButtonText, isCurrentReady && styles.readyButtonTextActive]}>
+              {isCurrentReady ? "Ready to Match" : "Mark as Ready"}
+            </Text>
+          </>
+        )}
       </TouchableOpacity>
 
+      {/* Start Button (Visible only to Host) */}
       {isHost ? (
-        <TouchableOpacity
-          disabled={!canStart || startingMatch || room?.status === "finished" || hasLeftMember}
-          onPress={onStartMatch}
-          style={[styles.startButton, (!canStart || startingMatch) && styles.startButtonDisabled]}
-        >
-          <Text style={styles.startButtonText}>{startingMatch ? "Starting..." : "Start Match"}</Text>
-        </TouchableOpacity>
+        <View style={styles.startSection}>
+          <TouchableOpacity
+            disabled={!canStart || startingMatch || room?.status === "finished" || hasLeftMember}
+            onPress={onStartMatch}
+            activeOpacity={0.8}
+            style={[styles.startButton, (!canStart || startingMatch) && styles.startButtonDisabled]}
+          >
+            {startingMatch ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <>
+                <Text style={[styles.startButtonText, (!canStart || startingMatch) && styles.startButtonTextDisabled]}>
+                  Start Match Session
+                </Text>
+                <Ionicons 
+                  name="arrow-forward" 
+                  size={16} 
+                  color={canStart ? "#ffffff" : "#52525b"} 
+                  style={{ marginLeft: 8 }}
+                />
+              </>
+            )}
+          </TouchableOpacity>
+          
+          {!canStart && !hasLeftMember && (
+            <View style={styles.hintContainer}>
+              <Text style={styles.hintText}>
+                Waiting for both participants to mark themselves as Ready.
+              </Text>
+            </View>
+          )}
+        </View>
       ) : (
-        <Text style={styles.hint}>Host will start once both users are ready.</Text>
+        <View style={styles.hintContainer}>
+          <Text style={styles.hintText}>
+            The Host will start the session once both players are ready.
+          </Text>
+        </View>
       )}
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  hint: {
-    color: "#52525b",
-    fontSize: 12,
-    lineHeight: 18,
+  container: {
+    marginTop: 16,
   },
   readyButton: {
-    marginTop: 8,
-    backgroundColor: "#1f2937",
-    borderRadius: 12,
-    paddingVertical: 12,
+    height: 56,
+    borderRadius: 16,
     alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
     borderWidth: 1,
-    borderColor: "#374151",
+    backgroundColor: "#13131c",
+    borderColor: "rgba(255, 255, 255, 0.06)",
   },
   readyButtonActive: {
-    backgroundColor: "#14532d",
-    borderColor: "#22c55e",
+    backgroundColor: "rgba(16, 185, 129, 0.15)",
+    borderColor: "rgba(16, 185, 129, 0.4)",
   },
   readyButtonText: {
-    color: "#f8fafc",
+    fontSize: 15,
     fontWeight: "700",
-    fontSize: 14,
+    letterSpacing: 0.5,
+    color: "#ffffff",
+  },
+  readyButtonTextActive: {
+    color: "#34d399",
+  },
+  startSection: {
+    marginTop: 16,
   },
   startButton: {
-    marginTop: 10,
-    backgroundColor: "#7c3aed",
-    borderRadius: 12,
-    paddingVertical: 12,
+    height: 56,
+    borderRadius: 16,
     alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    borderWidth: 1,
+    backgroundColor: "#7c3aed",
+    borderColor: "rgba(255, 255, 255, 0.1)",
   },
   startButtonDisabled: {
-    opacity: 0.45,
+    backgroundColor: "rgba(24, 24, 34, 0.6)",
+    borderColor: "rgba(255, 255, 255, 0.03)",
   },
   startButtonText: {
-    color: "#fff",
+    fontSize: 15,
     fontWeight: "700",
-    fontSize: 14,
+    letterSpacing: 0.5,
+    color: "#ffffff",
+  },
+  startButtonTextDisabled: {
+    color: "#52525b",
+  },
+  hintContainer: {
+    marginTop: 16,
+    alignItems: "center",
+  },
+  hintText: {
+    fontSize: 12,
+    color: "#52525b",
+    textAlign: "center",
+    lineHeight: 18,
   },
 });

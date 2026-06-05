@@ -6,6 +6,7 @@ import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 export function useHomeDashboard() {
   const { user } = useAuthSession();
   const [matchCount, setMatchCount] = useState(0);
+  const [roomCount, setRoomCount] = useState(0);
   const [recentMatches, setRecentMatches] = useState<(Match & { movie: RoomMovie })[]>([]);
   const [streakDays, setStreakDays] = useState(0);
   const [topGenreId, setTopGenreId] = useState<number | null>(null);
@@ -29,6 +30,7 @@ export function useHomeDashboard() {
 
         if (isMounted) {
           setMatchCount(stats.matchCount);
+          setRoomCount(stats.roomCount);
           setRecentMatches(matches);
           setStreakDays(streakTaste.streakDays);
           setTopGenreId(streakTaste.topGenreId);
@@ -44,5 +46,5 @@ export function useHomeDashboard() {
     return () => { isMounted = false; };
   }, [user]);
 
-  return { matchCount, recentMatches, streakDays, topGenreId, statsLoading };
+  return { matchCount, roomCount, recentMatches, streakDays, topGenreId, statsLoading };
 }

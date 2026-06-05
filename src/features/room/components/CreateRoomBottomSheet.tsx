@@ -31,12 +31,12 @@ export function CreateRoomBottomSheet({
     <BottomSheet 
       visible={visible} 
       onClose={onClose} 
-      backgroundColor="#12121a"
+      backgroundColor="#0b0b0f"
       contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
     >
       <View className="px-6 pb-6">
         <View className="mb-6 px-1 mt-2">
-          <Text className="text-[20px] font-bold text-white tracking-tight">{title}</Text>
+          <Text className="text-[18px] font-bold text-white tracking-tight">{title}</Text>
         </View>
         
         <ScrollView className="max-h-[55vh]" showsVerticalScrollIndicator={false}>
@@ -48,11 +48,11 @@ export function CreateRoomBottomSheet({
                   <TouchableOpacity
                     key={option.key}
                     onPress={() => onSelect(option.key)}
-                    activeOpacity={0.7}
-                    className={`w-[31%] py-3 mb-3 rounded-2xl flex-row items-center justify-center border ${isSelected ? 'bg-[#7c3aed] border-[#7c3aed]' : 'bg-[#18181b] border-[#ffffff15]'}`}
+                    activeOpacity={0.78}
+                    className={`w-[31%] py-3 mb-3 rounded-xl flex-row items-center justify-center border ${isSelected ? 'bg-[#a78bfa]/10 border-[#a78bfa]' : 'bg-[#13131c] border-[#ffffff05]'}`}
                   >
-                    {isSelected && <Ionicons name="checkmark" size={14} color="white" style={{ marginRight: 4 }} />}
-                    <Text className={`text-[12px] ${isSelected ? 'font-bold text-white' : 'font-medium text-[#d4d4d8]'}`}>
+                    {isSelected && <Ionicons name="checkmark" size={12} color="#c4b5fd" style={{ marginRight: 4 }} />}
+                    <Text className={`text-[12px] ${isSelected ? 'font-bold text-[#c4b5fd]' : 'font-medium text-[#8e8e9f]'}`}>
                        {option.label}
                     </Text>
                   </TouchableOpacity>
@@ -67,11 +67,11 @@ export function CreateRoomBottomSheet({
                     <TouchableOpacity
                        key={option.key}
                        onPress={() => { onSelect(option.key); onClose(); }}
-                       activeOpacity={0.7}
-                       className={`flex-row justify-between items-center py-4 px-2 ${index !== options.length - 1 ? 'border-b border-[#ffffff0a]' : ''}`}
+                       activeOpacity={0.78}
+                       className={`flex-row justify-between items-center py-4 px-2 ${index !== options.length - 1 ? 'border-b border-[#ffffff05]' : ''}`}
                     >
-                       <Text className={`text-[16px] ${isSelected ? 'text-white font-bold' : 'text-[#9ca3af] font-medium'}`}>{option.label}</Text>
-                       {isSelected && <Ionicons name="checkmark" size={22} color="#7c3aed" />}
+                       <Text className={`text-[15px] ${isSelected ? 'text-[#c4b5fd] font-bold' : 'text-[#8e8e9f] font-medium'}`}>{option.label}</Text>
+                       {isSelected && <Ionicons name="checkmark-sharp" size={18} color="#c4b5fd" />}
                     </TouchableOpacity>
                  )
               })}
@@ -83,9 +83,9 @@ export function CreateRoomBottomSheet({
           <TouchableOpacity 
             onPress={onClose}
             activeOpacity={0.8}
-            className="bg-[#7c3aed] rounded-full h-14 mt-4 items-center justify-center shadow-lg shadow-[#7c3aed]/40"
+            className="bg-[#7c3aed] rounded-2xl h-14 mt-4 items-center justify-center border border-[#ffffff10]"
           >
-            <Text className="text-white font-bold text-[16px] tracking-wide">
+            <Text className="text-white font-bold text-[15px] tracking-wide">
               {actionLabel || `Done (${selectedKeys.length} selected)`}
             </Text>
           </TouchableOpacity>

@@ -8,23 +8,23 @@ interface CreateRoomHeaderProps {
 
 export function CreateRoomHeader({ onBack }: CreateRoomHeaderProps) {
   return (
-    <View className="px-6 pt-4 pb-6">
+    <View className="px-6 pt-6 pb-6">
       <TouchableOpacity
         onPress={onBack}
-        activeOpacity={0.7}
-        className="w-10 h-10 rounded-full bg-[#18181b] border border-[#ffffff15] justify-center items-center mb-6"
+        activeOpacity={0.78}
+        className="w-10 h-10 rounded-full bg-[#13131c] border border-[#ffffff0a] justify-center items-center mb-8"
       >
-        <Ionicons name="chevron-back" size={24} color="#f1f0f8" />
+        <Ionicons name="chevron-back" size={20} color="#f1f0f8" />
       </TouchableOpacity>
 
-      <Text className="text-[11px] tracking-[3px] uppercase text-[#7c3aed] font-bold mb-2">
-        NEW SESSION
+      <Text className="text-[10px] tracking-[2px] uppercase text-[#a78bfa] font-bold mb-2">
+        MATCH SETUP
       </Text>
-      <Text className="text-[40px] font-light text-[#f1f0f8] leading-[48px] tracking-tight">
-        Create a <Text className="text-[#7c3aed] font-semibold">Room</Text>
+      <Text className="text-[32px] font-bold text-[#ffffff] leading-[38px] tracking-tight">
+        Host a Session
       </Text>
-      <Text className="mt-2 text-[14px] text-[#9ca3af] font-light tracking-wide">
-        Set your preferences below
+      <Text className="mt-2 text-[14px] text-[#94a3b8] font-normal leading-[20px]">
+        Define your co-watching filters. Once created, you can invite your partner to join and match in seconds.
       </Text>
     </View>
   );
