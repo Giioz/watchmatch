@@ -12,6 +12,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { TMDBMediaItem } from '@/types/movie';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { ThemeColors } from '@/theme/colors';
 
 const { width, height } = Dimensions.get('window');
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w780';
@@ -22,6 +25,8 @@ interface MatchCelebrationOverlayProps {
 }
 
 export default function MatchCelebrationOverlay({ movie, visible }: MatchCelebrationOverlayProps) {
+  const styles = useAppStyles(createStyles);
+  const { colors } = useAppTheme();
   const overlayOpacity = useSharedValue(0);
   const posterScale = useSharedValue(0.5);
   const textScale = useSharedValue(0);
@@ -81,7 +86,7 @@ export default function MatchCelebrationOverlay({ movie, visible }: MatchCelebra
           <Image source={{ uri: posterUri }} style={styles.poster} resizeMode="cover" />
         ) : (
           <View style={styles.posterFallback}>
-            <Ionicons name="film-outline" size={64} color="#3f3f46" />
+            <Ionicons name="film-outline" size={64} color={colors.textSubtle} />
           </View>
         )}
         <View style={styles.overlay} />
@@ -94,7 +99,7 @@ export default function MatchCelebrationOverlay({ movie, visible }: MatchCelebra
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.95)',
@@ -107,13 +112,13 @@ const styles = StyleSheet.create({
     height: height * 0.55,
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: '#7c3aed',
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 30,
     elevation: 20,
     borderWidth: 2,
-    borderColor: '#8b5cf6',
+    borderColor: colors.primaryHover,
   },
   poster: {
     width: '100%',
@@ -122,22 +127,22 @@ const styles = StyleSheet.create({
   posterFallback: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#1c1c1e',
+    backgroundColor: colors.surfaceElevated,
     justifyContent: 'center',
     alignItems: 'center',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(124, 58, 237, 0.2)',
+    backgroundColor: colors.primarySoft,
   },
   matchText: {
     position: 'absolute',
     bottom: height * 0.15,
     fontSize: 42,
     fontWeight: '900',
-    color: '#ffffff',
+    color: colors.pureWhite,
     textAlign: 'center',
-    textShadowColor: '#a78bfa',
+    textShadowColor: colors.primary,
     textShadowOffset: { width: 0, height: 0 },
     letterSpacing: 2,
   },

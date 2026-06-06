@@ -13,6 +13,9 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w780';
 
@@ -25,6 +28,9 @@ export default function MatchTakeover() {
     year?: string;
     overview?: string;
   }>();
+
+  const { colors, isDark } = useAppTheme();
+  const styles = useAppStyles(createStyles);
 
   const pulse = useRef(new Animated.Value(0)).current;
   const rise = useRef(new Animated.Value(30)).current;
@@ -75,7 +81,7 @@ export default function MatchTakeover() {
         <View style={styles.titleRow}>
           <Text numberOfLines={2} style={styles.title}>{safeTitle}</Text>
           <TouchableOpacity style={styles.iconBtn} onPress={handleCopyTitle}>
-            <Ionicons name="copy-outline" size={18} color="#e4e4e7" />
+            <Ionicons name="copy-outline" size={18} color={colors.text} />
           </TouchableOpacity>
         </View>
 
@@ -83,7 +89,7 @@ export default function MatchTakeover() {
           <Image source={{ uri: posterUrl }} style={styles.poster} resizeMode="cover" />
         ) : (
           <View style={styles.posterFallback}>
-            <Ionicons name="film-outline" size={52} color="#3f3f46" />
+            <Ionicons name="film-outline" size={52} color={colors.textMuted} />
           </View>
         )}
 
@@ -107,7 +113,7 @@ export default function MatchTakeover() {
 
         <View style={styles.actionsRow}>
           <TouchableOpacity style={styles.secondaryButton} onPress={handleShare}>
-            <Ionicons name="share-social-outline" size={16} color="#c4b5fd" />
+            <Ionicons name="share-social-outline" size={16} color={colors.primary} />
             <Text style={styles.secondaryButtonText}>Share</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.primaryButton} onPress={() => router.replace('/')}>
@@ -120,10 +126,10 @@ export default function MatchTakeover() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0f',
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -133,7 +139,7 @@ const styles = StyleSheet.create({
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: '#7c3aed',
+    backgroundColor: colors.primary,
     top: -80,
     right: -70,
     opacity: 0.2,
@@ -153,14 +159,14 @@ const styles = StyleSheet.create({
     width: 320,
     height: 320,
     borderRadius: 160,
-    backgroundColor: 'rgba(124,58,237,0.12)',
+    backgroundColor: isDark ? 'rgba(124,58,237,0.12)' : 'rgba(124,58,237,0.06)',
   },
   card: {
     width: '100%',
     maxHeight: '88%',
     borderRadius: 20,
-    backgroundColor: '#121218',
-    borderColor: '#2a2a35',
+    backgroundColor: isDark ? '#121218' : '#ffffff',
+    borderColor: isDark ? '#2a2a35' : '#e5e5e5',
     borderWidth: 1,
     padding: 18,
   },
@@ -168,7 +174,7 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   eyebrow: {
-    color: '#c4b5fd',
+    color: colors.primary,
     textTransform: 'uppercase',
     fontSize: 11,
     letterSpacing: 2,
@@ -176,7 +182,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   title: {
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
@@ -192,9 +198,9 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#1e1e28',
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: '#30303a',
+    borderColor: isDark ? '#30303a' : '#e5e5e5',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
@@ -209,7 +215,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 330,
     borderRadius: 14,
-    backgroundColor: '#1b1b24',
+    backgroundColor: colors.surfaceHighlight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -231,21 +237,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   metaText: {
-    color: '#a1a1aa',
+    color: colors.textMuted,
     fontSize: 14,
     fontWeight: '600',
   },
   section: {
-    backgroundColor: '#171721',
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: '#2a2a35',
+    borderColor: isDark ? '#2a2a35' : '#e5e5e5',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 14,
   },
   sectionLabel: {
-    color: '#a78bfa',
+    color: colors.primary,
     textTransform: 'uppercase',
     fontSize: 10,
     letterSpacing: 1.5,
@@ -253,7 +259,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   overviewText: {
-    color: '#d4d4d8',
+    color: colors.text,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -262,7 +268,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   primaryButton: {
-    backgroundColor: '#7c3aed',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     paddingVertical: 13,
     paddingHorizontal: 16,
@@ -276,13 +282,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#3f3f46',
-    backgroundColor: '#18181b',
+    borderColor: colors.textMuted,
+    backgroundColor: colors.surface,
     paddingVertical: 13,
     paddingHorizontal: 14,
   },
   secondaryButtonText: {
-    color: '#c4b5fd',
+    color: colors.primary,
     fontWeight: '700',
     fontSize: 14,
   },

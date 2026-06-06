@@ -3,7 +3,9 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, Dimensions } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { TMDBMediaItem } from '@/types/movie';
 import { BottomSheet } from '@/components/BottomSheet';
-
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface BottomSheetProps {
@@ -13,6 +15,9 @@ interface BottomSheetProps {
 }
 
 export default function HomeMovieBottomSheet({ visible, movie, onClose }: BottomSheetProps) {
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   if (!movie) return null;
 
   const backdropUri = movie.backdrop_path
@@ -29,7 +34,7 @@ export default function HomeMovieBottomSheet({ visible, movie, onClose }: Bottom
     <BottomSheet 
       visible={visible} 
       onClose={onClose}
-      backgroundColor="#0b0b0f"
+      backgroundColor={colors.surface}
       contentContainerStyle={styles.sheetContainer}
     >
       <View style={styles.container}>
@@ -40,7 +45,7 @@ export default function HomeMovieBottomSheet({ visible, movie, onClose }: Bottom
               <Image source={{ uri: backdropUri }} style={styles.bannerImage} resizeMode="cover" />
             ) : (
               <View style={styles.bannerFallback}>
-                <Ionicons name="film-outline" size={32} color="#27273a" />
+                <Ionicons name="film-outline" size={32} color={colors.textMuted} />
               </View>
             )}
           </View>
@@ -51,7 +56,7 @@ export default function HomeMovieBottomSheet({ visible, movie, onClose }: Bottom
               <Image source={{ uri: posterUri }} style={styles.posterImage} resizeMode="cover" />
             ) : (
               <View style={styles.posterFallback}>
-                <Ionicons name="image-outline" size={20} color="#3f3f46" />
+                <Ionicons name="image-outline" size={20} color={colors.textMuted} />
               </View>
             )}
           </View>
@@ -68,7 +73,7 @@ export default function HomeMovieBottomSheet({ visible, movie, onClose }: Bottom
             <View style={styles.metaRow}>
               {releaseYear ? (
                 <View style={styles.metaBadge}>
-                  <Ionicons name="calendar-outline" size={11} color="#a78bfa" />
+                  <Ionicons name="calendar-outline" size={11} color={colors.primary} />
                   <Text style={styles.metaText}>{releaseYear}</Text>
                 </View>
               ) : null}
@@ -103,7 +108,7 @@ export default function HomeMovieBottomSheet({ visible, movie, onClose }: Bottom
             onPress={onClose} 
             style={styles.closeButton}
           >
-            <Ionicons name="close-outline" size={18} color="#c4b5fd" style={{ marginRight: 6 }} />
+            <Ionicons name="close-outline" size={18} color={colors.primary} style={{ marginRight: 6 }} />
             <Text style={styles.closeButtonText}>Close Details</Text>
           </TouchableOpacity>
         </View>
@@ -112,16 +117,16 @@ export default function HomeMovieBottomSheet({ visible, movie, onClose }: Bottom
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   sheetContainer: {
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: colors.border,
   },
   container: {
     paddingBottom: 40,
-    backgroundColor: '#0b0b0f',
+    backgroundColor: colors.surface,
   },
   headerContainer: {
     position: 'relative',
@@ -131,7 +136,7 @@ const styles = StyleSheet.create({
   bannerContainer: {
     width: '100%',
     height: 150,
-    backgroundColor: '#111116',
+    backgroundColor: colors.surfaceHighlight,
     overflow: 'hidden',
   },
   bannerImage: {
@@ -152,8 +157,8 @@ const styles = StyleSheet.create({
     height: 135,
     borderRadius: 14,
     borderWidth: 3,
-    borderColor: '#0b0b0f',
-    backgroundColor: '#181820',
+    borderColor: colors.surface,
+    backgroundColor: colors.surfaceElevated,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.45,
@@ -179,7 +184,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   titleText: {
-    color: '#ffffff',
+    color: colors.text,
     fontSize: 20,
     fontWeight: '800',
     letterSpacing: -0.5,
@@ -196,15 +201,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    backgroundColor: colors.glass,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: colors.border,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
   metaText: {
-    color: '#a1a1aa',
+    color: colors.textMuted,
     fontSize: 10,
     fontWeight: '600',
   },
@@ -220,20 +225,20 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: colors.border,
     marginVertical: 18,
   },
   sectionHeader: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#a78bfa',
+    color: colors.primary,
     letterSpacing: 1.5,
     marginBottom: 8,
     textTransform: 'uppercase',
   },
   overviewText: {
     fontSize: 13.5,
-    color: '#d1d5db',
+    color: colors.textMuted,
     lineHeight: 22,
     fontWeight: '400',
   },
@@ -241,15 +246,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(167, 139, 250, 0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(167, 139, 250, 0.2)',
-    paddingVertical: 14,
+    backgroundColor: colors.primarySoft,
     borderRadius: 14,
     marginTop: 28,
   },
   closeButtonText: {
-    color: '#c4b5fd',
+    color: colors.primary,
     fontSize: 13,
     fontWeight: '700',
     letterSpacing: 0.5,

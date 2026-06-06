@@ -5,15 +5,20 @@ import { StyleSheet, View, TouchableOpacity, Text, Animated, Dimensions } from '
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const TAB_WIDTH = SCREEN_WIDTH / 3;
+const TAB_WIDTH = SCREEN_WIDTH / 4;
 const INDICATOR_WIDTH = 44;
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(0)).current;
   const activeIndex = state.index;
+  const { colors, isDark } = useAppTheme();
+  const styles = useAppStyles(createStyles);
 
   const tabBarHeight = 56 + insets.bottom;
 
@@ -28,7 +33,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
   return (
     <View style={[styles.tabBarContainer, { height: tabBarHeight, paddingBottom: insets.bottom }]}>
-      <BlurView tint="dark" intensity={85} style={StyleSheet.absoluteFill}>
+      <BlurView tint={isDark ? "dark" : "light"} intensity={85} style={StyleSheet.absoluteFill}>
         <View style={styles.glassOverlay} />
       </BlurView>
       
@@ -73,6 +78,9 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           } else if (route.name === 'matches') {
             iconName = isFocused ? 'heart' : 'heart-outline';
             label = 'Matches';
+          } else if (route.name === 'library') {
+            iconName = isFocused ? 'library' : 'library-outline';
+            label = 'Library';
           }
 
           return (
@@ -86,9 +94,9 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 <Ionicons
                   name={iconName}
                   size={20}
-                  color={isFocused ? '#a78bfa' : '#71717a'}
+                  color={isFocused ? colors.primary : colors.textMuted}
                 />
-                <Text style={[styles.tabLabel, { color: isFocused ? '#a78bfa' : '#71717a' }]}>
+                <Text style={[styles.tabLabel, { color: isFocused ? colors.primary : colors.textMuted }]}>
                   {label}
                 </Text>
               </View>
@@ -111,19 +119,20 @@ export default function TabLayout() {
       <Tabs.Screen name="index" options={{ title: 'Home' }} />
       <Tabs.Screen name="stats" options={{ title: 'DNA' }} />
       <Tabs.Screen name="matches" options={{ title: 'Matches' }} />
+      <Tabs.Screen name="library" options={{ title: 'Library' }} />
     </Tabs>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   tabBarContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(10, 10, 15, 0.88)',
+    backgroundColor: isDark ? 'rgba(10, 10, 15, 0.88)' : 'rgba(255, 255, 255, 0.88)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
     shadowColor: '#000',
     shadowOpacity: 0.15,
     shadowRadius: 10,
@@ -131,16 +140,16 @@ const styles = StyleSheet.create({
   },
   glassOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(167, 139, 250, 0.01)',
+    backgroundColor: isDark ? 'rgba(167, 139, 250, 0.01)' : 'rgba(124, 58, 237, 0.01)',
   },
   topIndicator: {
     position: 'absolute',
     top: -1,
     width: INDICATOR_WIDTH,
     height: 3,
-    backgroundColor: '#a78bfa',
+    backgroundColor: colors.primary,
     borderRadius: 1.5,
-    shadowColor: '#a78bfa',
+    shadowColor: colors.primary,
     shadowOpacity: 0.6,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 1 },

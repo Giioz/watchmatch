@@ -2,6 +2,9 @@ import { Profile, Room, RoomUser } from "@/types/database";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useAppStyles } from '@/theme/useAppStyles';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { ThemeColors } from '@/theme/colors';
 
 interface RoomParticipantsCardProps {
   room: Room | null;
@@ -18,6 +21,9 @@ export default function RoomParticipantsCard({
   participantCount,
   readyCount,
 }: RoomParticipantsCardProps) {
+  const styles = useAppStyles(createStyles);
+  const { colors } = useAppTheme();
+
   // Find host and guest slots
   const hostMember = members.find(m => room?.host_id === m.user_id);
   const guestMember = members.find(m => room?.host_id !== m.user_id);
@@ -27,7 +33,7 @@ export default function RoomParticipantsCard({
       return (
         <View style={styles.emptySlotCard}>
           <View style={[styles.avatarCircle, styles.avatarCircleEmpty]}>
-            <Ionicons name="person-add-outline" size={16} color="#52525b" />
+            <Ionicons name="person-add-outline" size={16} color={colors.textSubtle} />
           </View>
           <Text style={styles.statusTextEmptyTitle}>
             Waiting...
@@ -71,7 +77,7 @@ export default function RoomParticipantsCard({
           <Ionicons 
             name={hasLeft ? "close-outline" : isReady ? "checkmark" : "person-outline"} 
             size={16} 
-            color={hasLeft ? "#fca5a5" : isReady ? "#4ade80" : "#a78bfa"} 
+            color={hasLeft ? colors.danger : isReady ? colors.success : colors.primary} 
           />
         </View>
 
@@ -114,7 +120,7 @@ export default function RoomParticipantsCard({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     marginBottom: 24,
   },
@@ -127,14 +133,14 @@ const styles = StyleSheet.create({
   },
   titleLabel: {
     fontSize: 10,
-    color: "#71717a",
+    color: colors.textSubtle,
     fontWeight: "700",
     letterSpacing: 1.5,
     textTransform: "uppercase",
   },
   readyCountText: {
     fontSize: 11,
-    color: "#a78bfa",
+    color: colors.primary,
     fontWeight: "600",
   },
   slotsRow: {
@@ -143,10 +149,10 @@ const styles = StyleSheet.create({
   },
   slotCard: {
     flex: 1,
-    backgroundColor: "#13131c",
+    backgroundColor: colors.surface,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.04)",
+    borderColor: colors.border,
     padding: 20,
     alignItems: "center",
     justifyContent: "center",
@@ -154,11 +160,11 @@ const styles = StyleSheet.create({
   },
   emptySlotCard: {
     flex: 1,
-    backgroundColor: "rgba(19, 19, 28, 0.45)",
+    backgroundColor: colors.surfaceHighlight, // Or a different subtle bg
     borderRadius: 20,
     borderStyle: "dashed",
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.06)",
+    borderColor: colors.border,
     padding: 20,
     alignItems: "center",
     justifyContent: "center",
@@ -174,31 +180,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   avatarCircleDefault: {
-    backgroundColor: "rgba(167, 139, 250, 0.1)",
-    borderColor: "rgba(167, 139, 250, 0.2)",
+    backgroundColor: colors.primarySoft,
+    borderColor: colors.primaryHover,
   },
   avatarCircleReady: {
-    backgroundColor: "rgba(74, 222, 128, 0.1)",
-    borderColor: "rgba(74, 222, 128, 0.4)",
+    backgroundColor: colors.successSoft,
+    borderColor: colors.success,
   },
   avatarCircleLeft: {
-    backgroundColor: "rgba(252, 165, 165, 0.1)",
-    borderColor: "rgba(252, 165, 165, 0.3)",
+    backgroundColor: colors.dangerSoft,
+    borderColor: colors.danger,
   },
   avatarCircleEmpty: {
-    backgroundColor: "rgba(24, 24, 34, 0.6)",
-    borderColor: "rgba(255, 255, 255, 0.04)",
+    backgroundColor: colors.surfaceElevated,
+    borderColor: colors.border,
   },
   displayName: {
     fontSize: 14,
-    color: "#ffffff",
+    color: colors.text,
     fontWeight: "700",
     textAlign: "center",
     marginBottom: 2,
   },
   roleText: {
     fontSize: 9,
-    color: "#71717a",
+    color: colors.textSubtle,
     fontWeight: "700",
     letterSpacing: 1,
     textTransform: "uppercase",
@@ -206,14 +212,14 @@ const styles = StyleSheet.create({
   },
   statusTextEmptyTitle: {
     fontSize: 13,
-    color: "#52525b",
+    color: colors.textMuted,
     fontWeight: "700",
     textAlign: "center",
     marginBottom: 4,
   },
   statusTextEmptyDesc: {
     fontSize: 10,
-    color: "#3f3f46",
+    color: colors.textSubtle,
     textAlign: "center",
   },
   statusPill: {
@@ -223,16 +229,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   statusPillDefault: {
-    backgroundColor: "rgba(255, 255, 255, 0.02)",
-    borderColor: "rgba(255, 255, 255, 0.04)",
+    backgroundColor: colors.surfaceHighlight,
+    borderColor: colors.border,
   },
   statusPillReady: {
-    backgroundColor: "rgba(74, 222, 128, 0.1)",
-    borderColor: "rgba(74, 222, 128, 0.25)",
+    backgroundColor: colors.successSoft,
+    borderColor: colors.success,
   },
   statusPillLeft: {
-    backgroundColor: "rgba(252, 165, 165, 0.1)",
-    borderColor: "rgba(252, 165, 165, 0.25)",
+    backgroundColor: colors.dangerSoft,
+    borderColor: colors.danger,
   },
   statusPillLabel: {
     fontSize: 9,
@@ -241,12 +247,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   statusPillLabelDefault: {
-    color: "#71717a",
+    color: colors.textSubtle,
   },
   statusPillLabelReady: {
-    color: "#4ade80",
+    color: colors.success,
   },
   statusPillLabelLeft: {
-    color: "#fca5a5",
+    color: colors.danger,
   },
 });

@@ -2,6 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { User } from '@supabase/supabase-js';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 interface ProfileHeaderProps {
   user: User;
@@ -19,10 +22,13 @@ function getInitial(user: User) {
 }
 
 export default function ProfileHeader({ user, onBack }: ProfileHeaderProps) {
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={onBack} activeOpacity={0.75} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={24} color="#f1f0f8" />
+        <Ionicons name="chevron-back" size={24} color={colors.text} />
       </TouchableOpacity>
 
       <View style={styles.identity}>
@@ -39,7 +45,7 @@ export default function ProfileHeader({ user, onBack }: ProfileHeaderProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     paddingHorizontal: 24,
     paddingTop: 8,
@@ -49,9 +55,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#18181b',
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: '#27272a',
+    borderColor: colors.surfaceHighlight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 22,
@@ -65,14 +71,14 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: 'rgba(124,58,237,0.2)',
+    backgroundColor: colors.primarySoft,
     borderWidth: 1,
-    borderColor: 'rgba(167,139,250,0.5)',
+    borderColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 28,
     fontWeight: '800',
   },
@@ -81,7 +87,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   eyebrow: {
-    color: '#7c3aed',
+    color: colors.primary,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 3,
@@ -89,13 +95,13 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   name: {
-    color: '#f1f0f8',
+    color: colors.text,
     fontSize: 28,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
   meta: {
-    color: '#71717a',
+    color: colors.textSubtle,
     fontSize: 12,
     marginTop: 4,
   },

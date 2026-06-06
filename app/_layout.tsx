@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import './global.css';
+import { ThemeProvider } from '@/theme/ThemeContext';
+import { ToastProvider } from '@/components/Toast';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -26,18 +28,20 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-    // GestureHandlerRootView აქ — root-ზე, ერთხელ
-    // flex: 1 სავალდებულოა, თორემ ეკრანი ცარიელი იქნება
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="auth" />
-        <Stack.Screen name="profile" />
-        <Stack.Screen name="create-room" />
-        <Stack.Screen name="room/[code]" />
-        <Stack.Screen name="arena" />
-        <Stack.Screen name="match" options={{ presentation: 'transparentModal' }} />
-      </Stack>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <ToastProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="auth" />
+            <Stack.Screen name="profile" />
+            <Stack.Screen name="create-room" />
+            <Stack.Screen name="room/[code]" />
+            <Stack.Screen name="arena" />
+            <Stack.Screen name="match" options={{ presentation: 'transparentModal' }} />
+          </Stack>
+        </GestureHandlerRootView>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }

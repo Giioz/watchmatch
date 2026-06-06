@@ -72,5 +72,12 @@ export const movieService = {
    */
   getRecommendations: async (movieId: number): Promise<TMDBDiscoverResponse | null> => {
     return await fetchFromTMDB<TMDBDiscoverResponse>(`/movie/${movieId}/recommendations`);
+  },
+
+  /**
+   * ფილმის დეტალების წამოღება (მაგალითად, ხანგრძლივობისთვის)
+   */
+  getMovieDetails: async (movieId: number): Promise<any | null> => {
+    return await fetchFromTMDB<any>(`/movie/${movieId}`);
   }
 };

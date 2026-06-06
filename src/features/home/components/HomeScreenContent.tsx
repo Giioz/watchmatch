@@ -9,10 +9,14 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { roomService } from '@/services/roomService';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 import { useHomeAnimations } from '../hooks/useHomeAnimations';
 import HomeActionButtons from './HomeActionButtons';
@@ -28,10 +32,13 @@ export default function HomeScreenContent() {
   const [selectedMovie, setSelectedMovie] = useState<TMDBMediaItem | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const { colors, isDark, toggleTheme } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   const { headerAnim, cardsAnim, actionsAnim, orb1Style, orb2Style } = useHomeAnimations();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0a0a0f' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Ambient Orbs */}
       <Animated.View style={[styles.orb1, orb1Style]} pointerEvents="none" />
       <Animated.View style={[styles.orb2, orb2Style]} pointerEvents="none" />
@@ -56,18 +63,31 @@ export default function HomeScreenContent() {
                 </View>
               </View>
               
-              {user && (
-                <HomeProfileButton
-                  user={user}
-                  onPress={() => router.push('/profile')}
-                />
-              )}
+              <View style={styles.headerRight}>
+                <TouchableOpacity
+                  style={styles.themeToggle}
+                  onPress={toggleTheme}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name={isDark ? 'sunny' : 'moon'}
+                    size={20}
+                    color={colors.text}
+                  />
+                </TouchableOpacity>
+                {user && (
+                  <HomeProfileButton
+                    user={user}
+                    onPress={() => router.push('/profile')}
+                  />
+                )}
+              </View>
             </Animated.View>
 
             {/* Welcoming Header Section */}
             <Animated.View style={[styles.welcomeSection, { opacity: headerAnim }]}>
               <Text style={styles.welcomePrompt}>
-                What are we watching tonight?
+                KRISTI RAS VUYUROT?
               </Text>
               <Text style={styles.welcomeSubtext}>
                 No debates. Swipe genres, invite a partner, and agree on a movie in seconds.
@@ -110,9 +130,9 @@ export default function HomeScreenContent() {
   );
 }
 
-const styles = StyleSheet.create({
-  orb1: { position: 'absolute', width: 260, height: 260, borderRadius: 130, backgroundColor: '#7c3aed', opacity: 0.15, top: -80, left: -80 },
-  orb2: { position: 'absolute', width: 180, height: 180, borderRadius: 90, backgroundColor: '#4f46e5', opacity: 0.12, bottom: 60, right: -50 },
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
+  orb1: { position: 'absolute', width: 250, height: 250, borderRadius: 125, backgroundColor: colors.primary, opacity: 0.15, top: -60, left: -40 },
+  orb2: { position: 'absolute', width: 260, height: 260, borderRadius: 130, backgroundColor: '#4f46e5', opacity: 0.1, bottom: 20, right: -60 },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -124,13 +144,26 @@ const styles = StyleSheet.create({
   titleColumn: {
     flex: 1,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  themeToggle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   logoStack: {
     marginBottom: 10,
   },
   watchText: {
     fontSize: 40,
     fontWeight: '300',
-    color: '#ffffff',
+    color: colors.text,
     letterSpacing: -1.5,
     lineHeight: 42,
   },
@@ -138,7 +171,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: '900',
     fontStyle: 'italic',
-    color: '#a78bfa',
+    color: colors.primary,
     letterSpacing: -1,
     lineHeight: 42,
     marginLeft: 28,
@@ -179,7 +212,7 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: 9,
     fontWeight: '600',
-    color: '#a1a1aa',
+    color: colors.textMuted,
     letterSpacing: 0.8,
   },
   welcomeSection: {
@@ -189,19 +222,19 @@ const styles = StyleSheet.create({
   },
   welcomePrompt: {
     fontSize: 22,
-    color: '#ffffff',
+    color: colors.text,
     fontWeight: '800',
     letterSpacing: -0.5,
     marginBottom: 6,
   },
   welcomeSubtext: {
     fontSize: 14,
-    color: '#94a3b8',
+    color: colors.textMuted,
     lineHeight: 20,
     fontWeight: '400',
   },
   sectionTitle: {
-    color: '#71717a',
+    color: colors.textMuted,
     fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',

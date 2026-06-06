@@ -13,6 +13,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -57,6 +60,7 @@ interface StreakWidgetProps {
 }
 
 function FlameIcon({ size = 34, lit }: { size?: number; lit: boolean }) {
+  const { colors } = useAppTheme();
   const pulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -73,12 +77,15 @@ function FlameIcon({ size = 34, lit }: { size?: number; lit: boolean }) {
 
   return (
     <Animated.View style={{ transform: [{ scale: pulse }] }}>
-      <Ionicons name="flame" size={size} color={lit ? '#f97316' : '#3f3f46'} />
+      <Ionicons name="flame" size={size} color={lit ? '#f97316' : colors.textMuted} />
     </Animated.View>
   );
 }
 
 export default function StreakWidget({ streakDays, topGenreId, matchCount, roomCount }: StreakWidgetProps) {
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+  
   const genre = topGenreId !== null ? (GENRE_MAP[topGenreId] ?? FALLBACK_GENRE) : FALLBACK_GENRE;
 
   const scrollViewRef = useRef<any>(null);
@@ -174,7 +181,7 @@ export default function StreakWidget({ streakDays, topGenreId, matchCount, roomC
                     styles.dot,
                     lit
                       ? { backgroundColor: '#f97316', shadowColor: '#f97316', shadowOpacity: 0.8, shadowRadius: 6, shadowOffset: { width: 0, height: 0 } }
-                      : { backgroundColor: '#24242b' },
+                      : { backgroundColor: colors.surfaceHighlight },
                   ]}
                 />
               ))}
@@ -207,7 +214,7 @@ export default function StreakWidget({ streakDays, topGenreId, matchCount, roomC
         {/* SLIDE 3: CHEMISTRY & STATS */}
         <View style={[styles.slide, { width: containerWidth }]}>
           <View style={styles.slideLeft}>
-            <Text style={[styles.slideEyebrow, { color: '#a78bfa' }]}>CO-WATCH CHEMISTRY</Text>
+            <Text style={[styles.slideEyebrow, { color: colors.primary }]}>CO-WATCH CHEMISTRY</Text>
             <Text style={styles.slideTitle}>
               {matchCount > 0 ? `${syncPercentage}% Movie Sync` : '0% Synergy'}
             </Text>
@@ -230,7 +237,7 @@ export default function StreakWidget({ streakDays, topGenreId, matchCount, roomC
           </View>
           <View style={styles.slideRight}>
             <View style={[styles.iconCircle, { borderColor: 'rgba(167, 139, 250, 0.3)', backgroundColor: 'rgba(167, 139, 250, 0.1)' }]}>
-              <Ionicons name="flask-outline" size={28} color="#a78bfa" />
+              <Ionicons name="flask-outline" size={28} color={colors.primary} />
             </View>
           </View>
         </View>
@@ -254,7 +261,7 @@ export default function StreakWidget({ streakDays, topGenreId, matchCount, roomC
           
           const dotColor = scrollX.interpolate({
             inputRange,
-            outputRange: ['#3f3f46', '#a78bfa', '#3f3f46'],
+            outputRange: [colors.textMuted, colors.primary, colors.textMuted],
             extrapolate: 'clamp',
           });
 
@@ -279,14 +286,14 @@ export default function StreakWidget({ streakDays, topGenreId, matchCount, roomC
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   card: {
     marginHorizontal: 24,
     marginTop: 20,
     borderRadius: 22,
-    backgroundColor: 'rgba(21, 21, 28, 0.85)',
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.07)',
+    borderColor: colors.border,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.4,
@@ -299,7 +306,7 @@ const styles = StyleSheet.create({
     width: 130,
     height: 130,
     borderRadius: 65,
-    backgroundColor: '#7c3aed',
+    backgroundColor: colors.primary,
     opacity: 0.06,
     top: -40,
     left: -40,
@@ -346,13 +353,13 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   slideTitle: {
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 22,
     fontWeight: '800',
     letterSpacing: -0.5,
   },
   slideDesc: {
-    color: '#8e8e9f',
+    color: colors.textMuted,
     fontSize: 12,
     lineHeight: 18,
     marginTop: 6,
@@ -383,7 +390,7 @@ const styles = StyleSheet.create({
     borderRadius: 3.5,
   },
   dotsMore: {
-    color: '#52525b',
+    color: colors.textMuted,
     fontSize: 11,
     fontWeight: '600',
     marginLeft: 4,
@@ -391,7 +398,7 @@ const styles = StyleSheet.create({
   progressBarBg: {
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#24242f',
+    backgroundColor: colors.surfaceHighlight,
     width: '100%',
     marginTop: 10,
     overflow: 'hidden',
@@ -399,7 +406,7 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: '100%',
     borderRadius: 3,
-    backgroundColor: '#a78bfa',
+    backgroundColor: colors.primarySoft,
   },
   statsMetricsRow: {
     flexDirection: 'row',
@@ -412,12 +419,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   statNumber: {
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 14,
     fontWeight: '800',
   },
   statLabel: {
-    color: '#71717a',
+    color: colors.textMuted,
     fontSize: 11,
     fontWeight: '500',
   },

@@ -1,6 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { ThemeColors } from '@/theme/colors';
 
 interface ArenaHeaderProps {
   onBack: () => void;
@@ -12,6 +15,9 @@ interface ArenaHeaderProps {
 }
 
 export default function ArenaHeader({ onBack, swipedCount, likedCount, currentIndex, totalCount, opponentSwipes }: ArenaHeaderProps) {
+  const styles = useAppStyles(createStyles);
+  const { colors } = useAppTheme();
+
   const progress = totalCount && totalCount > 0 && currentIndex !== undefined ? (currentIndex / totalCount) * 100 : 0;
   const opponentProgress = totalCount && totalCount > 0 && opponentSwipes !== undefined ? (opponentSwipes / totalCount) * 100 : 0;
 
@@ -19,7 +25,7 @@ export default function ArenaHeader({ onBack, swipedCount, likedCount, currentIn
     <View style={styles.headerContainer}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Ionicons name="chevron-back" size={24} color="#71717a" />
+          <Ionicons name="chevron-back" size={24} color={colors.textSubtle} />
         </TouchableOpacity>
 
         <View style={{ alignItems: 'center' }}>
@@ -56,7 +62,7 @@ export default function ArenaHeader({ onBack, swipedCount, likedCount, currentIn
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   headerContainer: {
     paddingBottom: 12,
   },
@@ -68,8 +74,8 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 8,
   },
-  title: { fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#7c3aed', fontWeight: '500' },
-  subtitle: { color: '#3f3f46', fontSize: 11, marginTop: 2 },
+  title: { fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: colors.primary, fontWeight: '500' },
+  subtitle: { color: colors.textSubtle, fontSize: 11, marginTop: 2 },
   progressWrapper: {
     paddingHorizontal: 24,
     marginTop: 4,
@@ -79,19 +85,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   progressLabel: {
-    color: '#a1a1aa',
+    color: colors.textMuted,
     fontSize: 10,
     fontWeight: '600',
     width: 38,
   },
   progressLabelFriend: {
-    color: '#71717a',
+    color: colors.textSubtle,
     fontSize: 10,
     fontWeight: '600',
     width: 38,
   },
   progressValue: {
-    color: '#71717a',
+    color: colors.textSubtle,
     fontSize: 9,
     fontWeight: '500',
     width: 28,
@@ -100,18 +106,18 @@ const styles = StyleSheet.create({
   progressBarBg: {
     flex: 1,
     height: 4,
-    backgroundColor: '#27272a',
+    backgroundColor: colors.surfaceHighlight,
     borderRadius: 2,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#7c3aed',
+    backgroundColor: colors.primary,
     borderRadius: 2,
   },
   progressBarFriendFill: {
     height: '100%',
-    backgroundColor: '#3b82f6',
+    backgroundColor: colors.primaryHover, // or colors.primary depending on design
     borderRadius: 2,
   },
 });

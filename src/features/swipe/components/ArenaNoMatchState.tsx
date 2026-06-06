@@ -1,6 +1,9 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useAppStyles } from '@/theme/useAppStyles';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { ThemeColors } from '@/theme/colors';
 
 interface ArenaNoMatchStateProps {
   roundLoading: null | "rerun" | "liked";
@@ -15,16 +18,19 @@ export default function ArenaNoMatchState({
   onRunAgain,
   onSecondRoundLiked,
 }: ArenaNoMatchStateProps) {
+  const styles = useAppStyles(createStyles);
+  const { colors } = useAppTheme();
+
   return (
     <View style={styles.doneContainer}>
-      <Ionicons name="heart-dislike-outline" size={48} color="#f53f5e" style={{ marginBottom: 12 }} />
+      <Ionicons name="heart-dislike-outline" size={48} color={colors.danger} style={{ marginBottom: 12 }} />
       <Text style={styles.doneText}>No match this round</Text>
       <TouchableOpacity
         onPress={onRunAgain}
         style={styles.refreshButton}
         disabled={roundLoading !== null}
       >
-        <Text style={{ color: "#fff", fontWeight: "600" }}>
+        <Text style={{ color: colors.pureWhite, fontWeight: "600" }}>
           {roundLoading === "rerun" ? "Starting..." : "Run Again (10 New Picks)"}
         </Text>
       </TouchableOpacity>
@@ -33,7 +39,7 @@ export default function ArenaNoMatchState({
         style={styles.secondaryButton}
         disabled={roundLoading !== null}
       >
-        <Text style={{ color: "#c4b5fd", fontWeight: "600" }}>
+        <Text style={{ color: colors.primary, fontWeight: "600" }}>
           {roundLoading === "liked" ? "Building..." : "Second Round From Likes"}
         </Text>
       </TouchableOpacity>
@@ -42,7 +48,7 @@ export default function ArenaNoMatchState({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   doneContainer: {
     flex: 1,
     alignItems: "center",
@@ -50,7 +56,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   doneText: {
-    color: "#f4f4f5",
+    color: colors.text,
     fontSize: 22,
     fontWeight: "600",
     marginTop: 16,
@@ -58,23 +64,23 @@ const styles = StyleSheet.create({
   },
   refreshButton: {
     marginTop: 16,
-    backgroundColor: "#7c3aed",
+    backgroundColor: colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
   },
   secondaryButton: {
     marginTop: 10,
-    backgroundColor: "#18181b",
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: "#3f3f46",
+    borderColor: colors.border,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
   },
   errorText: {
     marginTop: 12,
-    color: "#fca5a5",
+    color: colors.danger,
     fontSize: 12,
     textAlign: "center",
   },

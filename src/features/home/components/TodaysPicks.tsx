@@ -12,6 +12,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { TMDBMediaItem } from '@/types/movie';
 import { personalLibraryService } from '@/services/personalLibraryService';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 interface TodaysPicksProps {
   userId: string;
@@ -29,6 +32,9 @@ function PickCard({
 }) {
   const [isLiked, setIsLiked] = useState(false);
   const [isWatchlisted, setIsWatchlisted] = useState(false);
+
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
 
   const likeScale = useRef(new Animated.Value(1)).current;
   const watchScale = useRef(new Animated.Value(1)).current;
@@ -89,7 +95,7 @@ function PickCard({
         <Image source={{ uri: posterUri }} style={styles.poster} resizeMode="cover" />
       ) : (
         <View style={styles.posterFallback}>
-          <Ionicons name="film-outline" size={24} color="#3f3f46" />
+          <Ionicons name="film-outline" size={24} color={colors.textMuted} />
         </View>
       )}
 
@@ -104,7 +110,7 @@ function PickCard({
             <Ionicons
               name={isWatchlisted ? 'bookmark' : 'bookmark-outline'}
               size={15}
-              color={isWatchlisted ? '#ffffff' : '#a78bfa'}
+              color={isWatchlisted ? colors.text : colors.primary}
             />
           </Animated.View>
         </TouchableOpacity>
@@ -118,7 +124,7 @@ function PickCard({
             <Ionicons
               name={isLiked ? 'heart' : 'heart-outline'}
               size={15}
-              color={isLiked ? '#ffffff' : '#22c55e'}
+              color={isLiked ? colors.pureWhite : colors.success}
             />
           </Animated.View>
         </TouchableOpacity>
@@ -149,6 +155,9 @@ export default function TodaysPicks({ userId, onPressMovie }: TodaysPicksProps) 
   const [picks, setPicks] = useState<TMDBMediaItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   useEffect(() => {
     let active = true;
     async function loadPicks() {
@@ -170,7 +179,7 @@ export default function TodaysPicks({ userId, onPressMovie }: TodaysPicksProps) 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color="#a78bfa" />
+        <ActivityIndicator size="small" color={colors.primary} />
         <Text style={styles.loadingText}>Curating your daily picks...</Text>
       </View>
     );
@@ -205,7 +214,7 @@ export default function TodaysPicks({ userId, onPressMovie }: TodaysPicksProps) 
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     marginTop: 28,
   },
@@ -216,12 +225,12 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#a78bfa',
+    color: colors.primary,
     letterSpacing: 1.2,
     marginBottom: 4,
   },
   sectionTitle: {
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 18,
     fontWeight: '800',
     letterSpacing: -0.5,
@@ -236,7 +245,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingText: {
-    color: '#71717a',
+    color: colors.textMuted,
     fontSize: 12,
     marginTop: 8,
     fontWeight: '500',
@@ -246,9 +255,9 @@ const styles = StyleSheet.create({
     height: 220,
     borderRadius: 18,
     marginRight: 14,
-    backgroundColor: '#15151c',
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: colors.border,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.35,
@@ -262,7 +271,7 @@ const styles = StyleSheet.create({
   },
   posterFallback: {
     flex: 1,
-    backgroundColor: '#1b1b24',
+    backgroundColor: colors.surfaceHighlight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -276,9 +285,9 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(15, 15, 22, 0.85)',
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -287,26 +296,26 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
   },
   activeLikeBtn: {
-    backgroundColor: '#22c55e',
-    borderColor: '#4ade80',
+    backgroundColor: colors.success,
+    borderColor: colors.success,
   },
   activeWatchBtn: {
-    backgroundColor: '#7c3aed',
-    borderColor: '#a78bfa',
+    backgroundColor: colors.primary,
+    borderColor: colors.primarySoft,
   },
   infoOverlay: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(10, 10, 15, 0.85)',
+    backgroundColor: isDark ? 'rgba(10, 10, 15, 0.85)' : 'rgba(255, 255, 255, 0.9)',
     paddingHorizontal: 10,
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+    borderTopColor: colors.border,
   },
   title: {
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 11,
     fontWeight: '700',
     lineHeight: 14,

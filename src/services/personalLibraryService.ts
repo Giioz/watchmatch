@@ -8,6 +8,7 @@ const KEYS = {
   LIKES: '@personal_likes',
   TODAYS_PICKS: '@todays_picks',
   TODAYS_PICKS_DATE: '@todays_picks_date',
+  WATCH_STATUSES: '@watch_statuses',
 };
 
 export const personalLibraryService = {
@@ -204,6 +205,44 @@ export const personalLibraryService = {
     } catch (e) {
       console.error('Failed to generate todays picks', e);
       return [];
+    }
+  },
+
+  // --- Watch Statuses ---
+  getWatchStatuses: async (): Promise<Record<number, any>> => {
+    try {
+      const data = await AsyncStorage.getItem(KEYS.WATCH_STATUSES);
+      return data ? JSON.parse(data) : {};
+    } catch (e) {
+      console.error('Failed to load watch statuses', e);
+      return {};
+    }
+  },
+
+  getWatchStatus: async (movieId: number): Promise<any | null> => {
+    const statuses = await personalLibraryService.getWatchStatuses();
+    return statuses[movieId] || null;
+  },
+
+  setWatchStatus: async (status: any): Promise<void> => {
+    try {
+      const statuses = await personalLibraryService.getWatchStatuses();
+      statuses[status.movieId] = status;
+      await AsyncStorage.setItem(KEYS.WATCH_STATUSES, JSON.stringify(statuses));
+    } catch (e) {
+      console.error('Failed to set watch status', e);
+    }
+  },
+
+  removeWatchStatus: async (movieId: number): Promise<void> => {
+    try {
+      const statuses = await personalLibraryService.getWatchStatuses();
+      if (statuses[movieId]) {
+        delete statuses[movieId];
+        await AsyncStorage.setItem(KEYS.WATCH_STATUSES, JSON.stringify(statuses));
+      }
+    } catch (e) {
+      console.error('Failed to remove watch status', e);
     }
   }
 };

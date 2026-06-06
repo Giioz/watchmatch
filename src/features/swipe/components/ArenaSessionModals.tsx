@@ -1,5 +1,8 @@
 import React from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useAppStyles } from '@/theme/useAppStyles';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { ThemeColors } from '@/theme/colors';
 
 interface ArenaSessionModalsProps {
   isSessionEndedModalVisible: boolean;
@@ -16,6 +19,9 @@ export default function ArenaSessionModals({
   onCancelLeave,
   onConfirmLeave,
 }: ArenaSessionModalsProps) {
+  const styles = useAppStyles(createStyles);
+  const { colors } = useAppTheme();
+
   return (
     <>
       <Modal
@@ -60,10 +66,10 @@ export default function ArenaSessionModals({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.62)",
+    backgroundColor: colors.overlay,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 24,
@@ -71,31 +77,31 @@ const styles = StyleSheet.create({
   card: {
     width: "100%",
     borderRadius: 16,
-    backgroundColor: "#121218",
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: "#2a2a35",
+    borderColor: colors.border,
     padding: 18,
   },
   title: {
-    color: "#f4f4f5",
+    color: colors.text,
     fontSize: 20,
     fontWeight: "700",
     marginBottom: 8,
   },
   body: {
-    color: "#a1a1aa",
+    color: colors.textMuted,
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 14,
   },
   primaryButton: {
-    backgroundColor: "#7c3aed",
+    backgroundColor: colors.primary,
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: "center",
   },
   primaryButtonText: {
-    color: "#fff",
+    color: colors.pureWhite,
     fontWeight: "700",
     fontSize: 14,
   },
@@ -105,27 +111,27 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: "#18181b",
+    backgroundColor: colors.surfaceHighlight,
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#3f3f46",
+    borderColor: colors.border,
   },
   cancelButtonText: {
-    color: "#d4d4d8",
+    color: colors.textSubtle,
     fontWeight: "700",
     fontSize: 14,
   },
   leaveButton: {
     flex: 1,
-    backgroundColor: "#be123c",
+    backgroundColor: colors.danger,
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: "center",
   },
   leaveButtonText: {
-    color: "#fff",
+    color: colors.pureWhite,
     fontWeight: "700",
     fontSize: 14,
   },

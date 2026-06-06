@@ -2,6 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { User } from '@supabase/supabase-js';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 interface HomeProfileButtonProps {
   user: User;
@@ -14,6 +17,9 @@ function getInitial(user: User) {
 }
 
 export default function HomeProfileButton({ user, onPress }: HomeProfileButtonProps) {
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -21,24 +27,24 @@ export default function HomeProfileButton({ user, onPress }: HomeProfileButtonPr
       style={styles.button}
     >
       <Text style={styles.initial}>{getInitial(user)}</Text>
-      <Ionicons name="person-outline" size={13} color="#c4b5fd" style={styles.badge} />
+      <Ionicons name="person-outline" size={13} color={colors.primary} style={styles.badge} />
     </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   button: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(24,24,27,0.96)',
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1.5,
-    borderColor: 'rgba(167,139,250,0.45)',
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   initial: {
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -51,9 +57,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     textAlign: 'center',
     textAlignVertical: 'center',
-    backgroundColor: '#27272a',
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: '#3f3f46',
+    borderColor: colors.textMuted,
     paddingTop: 2,
   },
 });

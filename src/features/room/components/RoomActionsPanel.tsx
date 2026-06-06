@@ -2,6 +2,9 @@ import { Room } from "@/types/database";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useAppStyles } from '@/theme/useAppStyles';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { ThemeColors } from '@/theme/colors';
 
 interface RoomActionsPanelProps {
   room: Room | null;
@@ -26,6 +29,9 @@ export default function RoomActionsPanel({
   onToggleReady,
   onStartMatch,
 }: RoomActionsPanelProps) {
+  const styles = useAppStyles(createStyles);
+  const { colors } = useAppTheme();
+
   return (
     <View style={styles.container}>
       {/* Ready Button */}
@@ -36,13 +42,13 @@ export default function RoomActionsPanel({
         style={[styles.readyButton, isCurrentReady && styles.readyButtonActive]}
       >
         {togglingReady ? (
-          <ActivityIndicator size="small" color="#a78bfa" />
+          <ActivityIndicator size="small" color={colors.primary} />
         ) : (
           <>
             <Ionicons 
               name={isCurrentReady ? "checkmark-circle-outline" : "ellipse-outline"} 
               size={18} 
-              color={isCurrentReady ? "#34d399" : "#71717a"} 
+              color={isCurrentReady ? colors.success : colors.textSubtle} 
               style={{ marginRight: 8 }} 
             />
             <Text style={[styles.readyButtonText, isCurrentReady && styles.readyButtonTextActive]}>
@@ -62,7 +68,7 @@ export default function RoomActionsPanel({
             style={[styles.startButton, (!canStart || startingMatch) && styles.startButtonDisabled]}
           >
             {startingMatch ? (
-              <ActivityIndicator size="small" color="#ffffff" />
+              <ActivityIndicator size="small" color={colors.pureWhite} />
             ) : (
               <>
                 <Text style={[styles.startButtonText, (!canStart || startingMatch) && styles.startButtonTextDisabled]}>
@@ -71,7 +77,7 @@ export default function RoomActionsPanel({
                 <Ionicons 
                   name="arrow-forward" 
                   size={16} 
-                  color={canStart ? "#ffffff" : "#52525b"} 
+                  color={canStart ? colors.pureWhite : colors.textMuted} 
                   style={{ marginLeft: 8 }}
                 />
               </>
@@ -97,7 +103,7 @@ export default function RoomActionsPanel({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     marginTop: 16,
   },
@@ -108,21 +114,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
     borderWidth: 1,
-    backgroundColor: "#13131c",
-    borderColor: "rgba(255, 255, 255, 0.06)",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
   },
   readyButtonActive: {
-    backgroundColor: "rgba(16, 185, 129, 0.15)",
-    borderColor: "rgba(16, 185, 129, 0.4)",
+    backgroundColor: colors.successSoft,
+    borderColor: colors.success,
   },
   readyButtonText: {
     fontSize: 15,
     fontWeight: "700",
     letterSpacing: 0.5,
-    color: "#ffffff",
+    color: colors.text,
   },
   readyButtonTextActive: {
-    color: "#34d399",
+    color: colors.success,
   },
   startSection: {
     marginTop: 16,
@@ -134,21 +140,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
     borderWidth: 1,
-    backgroundColor: "#7c3aed",
-    borderColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
   },
   startButtonDisabled: {
-    backgroundColor: "rgba(24, 24, 34, 0.6)",
-    borderColor: "rgba(255, 255, 255, 0.03)",
+    backgroundColor: colors.surfaceHighlight,
+    borderColor: colors.border,
   },
   startButtonText: {
     fontSize: 15,
     fontWeight: "700",
     letterSpacing: 0.5,
-    color: "#ffffff",
+    color: colors.pureWhite,
   },
   startButtonTextDisabled: {
-    color: "#52525b",
+    color: colors.textMuted,
   },
   hintContainer: {
     marginTop: 16,
@@ -156,7 +162,7 @@ const styles = StyleSheet.create({
   },
   hintText: {
     fontSize: 12,
-    color: "#52525b",
+    color: colors.textMuted,
     textAlign: "center",
     lineHeight: 18,
   },

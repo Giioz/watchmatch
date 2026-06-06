@@ -1,6 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 const features: Array<{
   icon: keyof typeof Ionicons.glyphMap;
@@ -41,6 +44,9 @@ const features: Array<{
 ];
 
 export default function ProfileFeatureList() {
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Coming Features</Text>
@@ -48,7 +54,7 @@ export default function ProfileFeatureList() {
       {features.map((feature) => (
         <View key={feature.title} style={styles.item}>
           <View style={styles.iconWrap}>
-            <Ionicons name={feature.icon} size={20} color="#c4b5fd" />
+            <Ionicons name={feature.icon} size={20} color={colors.primary} />
           </View>
 
           <View style={styles.copy}>
@@ -66,13 +72,13 @@ export default function ProfileFeatureList() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     paddingHorizontal: 24,
     gap: 10,
   },
   sectionTitle: {
-    color: '#7c3aed',
+    color: colors.primary,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 2.4,
@@ -83,8 +89,8 @@ const styles = StyleSheet.create({
     minHeight: 92,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#24242b',
-    backgroundColor: 'rgba(17,17,21,0.94)',
+    borderColor: colors.surfaceHighlight,
+    backgroundColor: colors.surfaceElevated,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
@@ -95,9 +101,9 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: 'rgba(124,58,237,0.16)',
+    backgroundColor: colors.primarySoft,
     borderWidth: 1,
-    borderColor: 'rgba(167,139,250,0.32)',
+    borderColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -113,26 +119,26 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 15,
     fontWeight: '700',
   },
   statusBadge: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#3f3f46',
+    borderColor: colors.surfaceHighlight,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
   statusText: {
-    color: '#a1a1aa',
+    color: colors.textMuted,
     fontSize: 9,
     fontWeight: '700',
     letterSpacing: 0.7,
     textTransform: 'uppercase',
   },
   description: {
-    color: '#71717a',
+    color: colors.textSubtle,
     fontSize: 12,
     lineHeight: 17,
     marginTop: 5,

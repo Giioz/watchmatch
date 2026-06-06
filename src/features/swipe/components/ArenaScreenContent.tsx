@@ -12,6 +12,9 @@ import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { roomService } from "@/services/roomService";
+import { useAppStyles } from '@/theme/useAppStyles';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { ThemeColors } from '@/theme/colors';
 
 import ArenaControls from "./ArenaControls";
 import ArenaHeader from "./ArenaHeader";
@@ -25,6 +28,9 @@ import { useArena } from "../hooks/useArena";
 const CARD_STACK_SIZE = 3;
 
 export default function ArenaScreenContent() {
+  const styles = useAppStyles(createStyles);
+  const { colors } = useAppTheme();
+  
   const router = useRouter();
   const { code } = useLocalSearchParams<{ code?: string }>();
   const { user } = useAuthSession();
@@ -207,14 +213,14 @@ export default function ArenaScreenContent() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7c3aed" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Curating random films…</Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <ArenaHeader
         onBack={handleArenaBack}
         swipedCount={swipedCount}
@@ -234,14 +240,14 @@ export default function ArenaScreenContent() {
           />
         ) : isDone ? (
           <View style={styles.doneContainer}>
-            <Ionicons name="checkmark-circle-outline" size={48} color="#a78bfa" style={{ marginBottom: 12 }} />
+            <Ionicons name="checkmark-circle-outline" size={48} color={colors.primary} style={{ marginBottom: 12 }} />
             <Text style={styles.doneText}>End of this stack!</Text>
             <TouchableOpacity
               onPress={handleRefresh}
               style={[styles.refreshButton, { flexDirection: "row", alignItems: "center", gap: 6 }]}
             >
-              <Text style={{ color: "#fff", fontWeight: "600" }}>Go Again</Text>
-              <Ionicons name="refresh" size={14} color="#ffffff" />
+              <Text style={{ color: colors.pureWhite, fontWeight: "600" }}>Go Again</Text>
+              <Ionicons name="refresh" size={14} color={colors.pureWhite} />
             </TouchableOpacity>
           </View>
         ) : (
@@ -297,15 +303,15 @@ export default function ArenaScreenContent() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: "#0a0a0f",
+    backgroundColor: colors.background,
     alignItems: "center",
     justifyContent: "center",
   },
   loadingText: {
-    color: "#52525b",
+    color: colors.textMuted,
     marginTop: 12,
     fontSize: 13,
     letterSpacing: 0.5,
@@ -323,7 +329,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   doneText: {
-    color: "#f4f4f5",
+    color: colors.text,
     fontSize: 22,
     fontWeight: "600",
     marginTop: 16,
@@ -331,7 +337,7 @@ const styles = StyleSheet.create({
   },
   refreshButton: {
     marginTop: 16,
-    backgroundColor: "#7c3aed",
+    backgroundColor: colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,

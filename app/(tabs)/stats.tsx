@@ -4,10 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import StreakWidget from '@/features/home/components/StreakWidget';
 import { useHomeDashboard } from '@/features/home/hooks/useHomeDashboard';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 export default function StatsScreen() {
   const { user } = useAuthSession();
   const { matchCount, roomCount, streakDays, topGenreId, statsLoading } = useHomeDashboard();
+  const { colors, isDark } = useAppTheme();
+  const styles = useAppStyles(createStyles);
 
   if (!user) {
     return (
@@ -26,7 +31,7 @@ export default function StatsScreen() {
 
       {statsLoading ? (
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color="#a78bfa" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <StreakWidget
@@ -40,10 +45,10 @@ export default function StatsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0f',
+    backgroundColor: colors.background,
   },
   header: {
     paddingHorizontal: 24,
@@ -51,19 +56,19 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   title: {
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 32,
     fontWeight: '800',
     letterSpacing: -0.5,
   },
   subtitle: {
-    color: '#a78bfa',
+    color: colors.primary,
     fontSize: 14,
     fontWeight: '500',
     marginTop: 4,
   },
   emptyText: {
-    color: '#71717a',
+    color: colors.textMuted,
     textAlign: 'center',
     marginTop: 60,
   },

@@ -2,6 +2,9 @@ import React from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Match, RoomMovie } from '@/types/database';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 interface RecentMatchesScrollProps {
   recentMatches: (Match & { movie: RoomMovie })[];
@@ -10,6 +13,9 @@ interface RecentMatchesScrollProps {
 }
 
 export default function RecentMatchesScroll({ recentMatches, loading, onPressMovie }: RecentMatchesScrollProps) {
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   if (loading) {
     return (
       <View style={styles.loadingWrap}>
@@ -47,7 +53,7 @@ export default function RecentMatchesScroll({ recentMatches, loading, onPressMov
               <Image source={{ uri: posterUri }} style={styles.poster} resizeMode="cover" />
             ) : (
               <View style={styles.posterFallback}>
-                <Ionicons name="film-outline" size={32} color="#3f3f46" />
+                <Ionicons name="film-outline" size={32} color={colors.textMuted} />
               </View>
             )}
             <View style={styles.badge}>
@@ -60,13 +66,13 @@ export default function RecentMatchesScroll({ recentMatches, loading, onPressMov
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   loadingWrap: {
     paddingVertical: 20,
     alignItems: 'center',
   },
   loadingText: {
-    color: '#a1a1aa',
+    color: colors.textMuted,
     fontSize: 12,
   },
   emptyWrap: {
@@ -74,7 +80,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: '#71717a',
+    color: colors.textMuted,
     fontSize: 13,
     textAlign: 'center',
     paddingHorizontal: 24,
@@ -90,7 +96,7 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#1c1c1e',
+    backgroundColor: colors.surfaceElevated,
   },
   poster: {
     width: '100%',
@@ -105,13 +111,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 4,
     left: 4,
-    backgroundColor: 'rgba(124, 58, 237, 0.6)',
+    backgroundColor: colors.primary,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
   },
   badgeText: {
-    color: '#fff',
+    color: colors.pureWhite,
     fontSize: 9,
     fontWeight: '600',
   },

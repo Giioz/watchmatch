@@ -1,7 +1,13 @@
 import { Link, Stack } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 export default function NotFoundScreen() {
+  const { colors, isDark } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   return (
     <>
       <Stack.Screen options={{ title: 'Oops!' }} />
@@ -16,18 +22,18 @@ export default function NotFoundScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#09090b', // მუქი ფონი, რომ დიზაინში ჩაჯდეს
+    backgroundColor: colors.background, // მუქი ფონი, რომ დიზაინში ჩაჯდეს
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: colors.text,
   },
   link: {
     marginTop: 15,
@@ -35,6 +41,6 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 14,
-    color: '#a855f7', // იასამნისფერი ტექსტი
+    color: colors.primary, // იასამნისფერი ტექსტი
   },
 });

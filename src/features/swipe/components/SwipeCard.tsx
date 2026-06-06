@@ -5,6 +5,9 @@ import { GestureDetector } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { TMDBMediaItem } from '@/types/movie';
 import { useSwipe } from '../hooks/useSwipe';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { ThemeColors } from '@/theme/colors';
 
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w780';
 
@@ -49,30 +52,30 @@ const GENRE_MAP: Record<number, string> = {
 };
 
 // ჰელპერ ფუნქცია დინამიკური რეიტინგის ვიზუალისთვის
-const getRatingTheme = (rating: number) => {
+const getRatingTheme = (rating: number, colors: ThemeColors) => {
   if (rating >= 7.5) {
     return {
-      bg: 'rgba(139, 92, 246, 0.15)',      // პრემიუმ იასამნისფერი
-      border: 'rgba(139, 92, 246, 0.35)',
-      text: '#c4b5fd',
+      bg: colors.primarySoft,
+      border: colors.primaryHover,
+      text: colors.primary,
     };
   } else if (rating >= 6.5) {
     return {
-      bg: 'rgba(34, 197, 94, 0.12)',       // ნაის მწვანე
-      border: 'rgba(34, 197, 94, 0.3)',
-      text: '#4ade80',
+      bg: colors.successSoft,
+      border: colors.success,
+      text: colors.success,
     };
   } else if (rating >= 5.0) {
     return {
-      bg: 'rgba(245, 158, 11, 0.12)',      // თბილი ნარინჯისფერი
+      bg: 'rgba(245, 158, 11, 0.12)',
       border: 'rgba(245, 158, 11, 0.3)',
       text: '#fbbf24',
     };
   } else {
     return {
-      bg: 'rgba(239, 68, 68, 0.12)',       // კრიტიკული წითელი
-      border: 'rgba(239, 68, 68, 0.3)',
-      text: '#f87171',
+      bg: colors.dangerSoft,
+      border: colors.danger,
+      text: colors.danger,
     };
   }
 };
@@ -86,12 +89,15 @@ export default function SwipeCard({
   index,
   topCardX,
 }: SwipeCardProps) {
+  const styles = useAppStyles(createStyles);
+  const { colors } = useAppTheme();
+
   const title = movie.title ?? movie.name ?? 'Unknown';
   const year = (movie.release_date ?? movie.first_air_date ?? '').slice(0, 4);
   const rating = movie.vote_average.toFixed(1);
   const isMasterpiece = movie.vote_average >= 8.5;
   const posterUri = movie.poster_path ? `${IMAGE_BASE_URL}${movie.poster_path}` : null;
-  const ratingTheme = getRatingTheme(movie.vote_average);
+  const ratingTheme = getRatingTheme(movie.vote_average, colors);
   const genreText = movie.genre_ids && movie.genre_ids.length > 0 
     ? movie.genre_ids.map(id => GENRE_MAP[id]).filter(Boolean).slice(0, 2).join(' • ')
     : '';
@@ -112,7 +118,7 @@ export default function SwipeCard({
         <Image source={{ uri: posterUri }} style={styles.poster} resizeMode="cover" />
       ) : (
         <View style={styles.posterFallback}>
-          <Ionicons name="film-outline" size={56} color="#3f3f46" />
+          <Ionicons name="film-outline" size={56} color={colors.textSubtle} />
         </View>
       )}
 
@@ -157,12 +163,12 @@ export default function SwipeCard({
 
       {/* LIKE */}
       <Animated.View pointerEvents="none" style={[styles.stamp, styles.stampLeft, likeStyle]}>
-        <Text style={[styles.stampText, { color: '#4ade80' }]}>LIKE</Text>
+        <Text style={[styles.stampText, { color: colors.success }]}>LIKE</Text>
       </Animated.View>
 
       {/* NOPE */}
       <Animated.View pointerEvents="none" style={[styles.stamp, styles.stampRight, nopeStyle]}>
-        <Text style={[styles.stampText, { color: '#f87171' }]}>NOPE</Text>
+        <Text style={[styles.stampText, { color: colors.danger }]}>NOPE</Text>
       </Animated.View>
     </Animated.View>
   );
@@ -173,15 +179,15 @@ export default function SwipeCard({
   return cardContent;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   card: {
     position:        'absolute',
     width:           '100%',
     height:          '100%',
     borderRadius:    28,
-    backgroundColor: '#111114',
+    backgroundColor: colors.surface,
     overflow:        'hidden',
-    shadowColor:     '#000',
+    shadowColor:     colors.pureBlack,
     shadowOpacity:   0.45,
     shadowRadius:    24,
     shadowOffset:    { width: 0, height: 10 },
@@ -203,7 +209,7 @@ const styles = StyleSheet.create({
   posterFallback: {
     width:           '100%',
     height:          '100%',
-    backgroundColor: '#1c1c1e',
+    backgroundColor: colors.surfaceElevated,
     alignItems:      'center',
     justifyContent:  'center',
   },
@@ -223,7 +229,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingBottom:  28,
     paddingTop:     40,
-    backgroundColor: 'rgba(10,10,15,0.82)',
+    backgroundColor: colors.overlay,
   },
   ratingBadge: {
     alignSelf:       'flex-start',
@@ -252,21 +258,21 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   title: {
-    color:        '#ffffff',
+    color:        colors.pureWhite,
     fontSize:     26,
     fontWeight:   '700',
     letterSpacing: -0.5,
     marginBottom: 4,
   },
   year: {
-    color:        'rgba(255,255,255,0.45)',
+    color:        colors.textMuted,
     fontSize:     13,
     fontWeight:   '400',
     marginBottom: 10,
     letterSpacing: 0.2,
   },
   overview: {
-    color:      'rgba(255,255,255,0.55)',
+    color:      colors.textMuted,
     fontSize:   13,
     lineHeight: 19,
     fontWeight: '300',
@@ -281,11 +287,11 @@ const styles = StyleSheet.create({
   },
   stampLeft: {
     left:        22,
-    borderColor: '#4ade80',
+    borderColor: colors.success,
   },
   stampRight: {
     right:       22,
-    borderColor: '#f87171',
+    borderColor: colors.danger,
   },
   stampText: {
     fontSize:    24,

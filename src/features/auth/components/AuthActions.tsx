@@ -11,6 +11,9 @@ import {
   ViewStyle,
 } from 'react-native';
 import { AuthErrors } from '../hooks/useAuthForm';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 interface AuthActionsProps {
   animatedStyle: StyleProp<ViewStyle>;
@@ -31,6 +34,9 @@ export default function AuthActions({
   onSubmit,
   onToggleMode,
 }: AuthActionsProps) {
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   return (
     <Animated.View style={[styles.actionsContainer, animatedStyle]}>
       {(errors.form || statusMessage) && (
@@ -54,13 +60,13 @@ export default function AuthActions({
         style={styles.submitButton}
       >
         {loading ? (
-          <ActivityIndicator size="small" color="#ffffff" />
+          <ActivityIndicator size="small" color={colors.pureWhite} />
         ) : (
           <View style={styles.submitButtonContent}>
             <Ionicons
               name={isSignUp ? 'person-add-outline' : 'log-in-outline'}
               size={18}
-              color="rgba(255,255,255,0.9)"
+              color={colors.pureWhite}
             />
             <Text style={styles.submitButtonText}>
               {isSignUp ? 'Create Account' : 'Sign In'}
@@ -85,7 +91,7 @@ export default function AuthActions({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   actionsContainer: {
     gap: 16,
   },
@@ -96,12 +102,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   messageBoxError: {
-    backgroundColor: 'rgba(239,68,68,0.1)',
-    borderColor: 'rgba(239,68,68,0.35)',
+    backgroundColor: colors.dangerSoft,
+    borderColor: colors.danger,
   },
   messageBoxSuccess: {
-    backgroundColor: 'rgba(34,197,94,0.1)',
-    borderColor: 'rgba(34,197,94,0.35)',
+    backgroundColor: colors.successSoft,
+    borderColor: colors.success,
   },
   messageText: {
     fontSize: 12,
@@ -109,13 +115,13 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   messageTextError: {
-    color: '#fca5a5',
+    color: colors.danger,
   },
   messageTextSuccess: {
-    color: '#86efac',
+    color: colors.success,
   },
   submitButton: {
-    backgroundColor: '#7c3aed',
+    backgroundColor: colors.primary,
     height: 56,
     borderRadius: 14,
     alignItems: 'center',
@@ -127,7 +133,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   submitButtonText: {
-    color: '#fff',
+    color: colors.pureWhite,
     fontSize: 15,
     fontWeight: '500',
     letterSpacing: 0.2,
@@ -137,12 +143,12 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   modeToggleText: {
-    color: '#a1a1aa',
+    color: colors.textMuted,
     fontSize: 13,
     fontWeight: '400',
   },
   modeToggleHighlight: {
-    color: '#a78bfa',
+    color: colors.primary,
     fontWeight: '600',
   },
 });

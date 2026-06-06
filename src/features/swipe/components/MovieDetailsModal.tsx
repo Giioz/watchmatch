@@ -11,6 +11,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TMDBMediaItem } from "@/types/movie";
+import { useAppStyles } from '@/theme/useAppStyles';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { ThemeColors } from '@/theme/colors';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -55,6 +58,9 @@ export default function MovieDetailsModal({
   movie,
   onClose,
 }: MovieDetailsModalProps) {
+  const styles = useAppStyles(createStyles);
+  const { colors } = useAppTheme();
+
   if (!movie) return null;
 
   const backdropUri = movie.backdrop_path
@@ -84,7 +90,7 @@ export default function MovieDetailsModal({
         <View style={styles.modalHeader}>
           <Text style={styles.modalHeaderTitle}>Movie Details</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={20} color="#f4f4f5" />
+            <Ionicons name="close" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
 
@@ -99,7 +105,7 @@ export default function MovieDetailsModal({
                 <Image source={{ uri: backdropUri }} style={styles.bannerImage} resizeMode="cover" />
               ) : (
                 <View style={styles.bannerFallback}>
-                  <Ionicons name="film-outline" size={36} color="#27273a" />
+                  <Ionicons name="film-outline" size={36} color={colors.surfaceHighlight} />
                 </View>
               )}
             </View>
@@ -110,7 +116,7 @@ export default function MovieDetailsModal({
                 <Image source={{ uri: posterUri }} style={styles.posterImage} resizeMode="cover" />
               ) : (
                 <View style={styles.posterFallback}>
-                  <Ionicons name="image-outline" size={20} color="#3f3f46" />
+                  <Ionicons name="image-outline" size={20} color={colors.textSubtle} />
                 </View>
               )}
             </View>
@@ -127,7 +133,7 @@ export default function MovieDetailsModal({
               <View style={styles.metaRow}>
                 {releaseYear ? (
                   <View style={styles.metaBadge}>
-                    <Ionicons name="calendar-outline" size={11} color="#a78bfa" />
+                    <Ionicons name="calendar-outline" size={11} color={colors.primary} />
                     <Text style={styles.metaText}>{releaseYear}</Text>
                   </View>
                 ) : null}
@@ -178,8 +184,8 @@ export default function MovieDetailsModal({
   );
 }
 
-const styles = StyleSheet.create({
-  modalContainer: { flex: 1, backgroundColor: "#0a0a0f" },
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
+  modalContainer: { flex: 1, backgroundColor: colors.background },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -187,25 +193,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 18,
     borderBottomWidth: 1,
-    borderColor: "#181822",
-    backgroundColor: "#0b0b0f",
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceElevated,
   },
   modalHeaderTitle: {
-    color: "#a78bfa",
+    color: colors.primary,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 2,
     textTransform: "uppercase",
   },
   closeButton: {
-    backgroundColor: "#1c1c24",
+    backgroundColor: colors.surface,
     width: 32,
     height: 32,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.05)",
+    borderColor: colors.border,
   },
   headerContainer: {
     position: "relative",
@@ -215,7 +221,7 @@ const styles = StyleSheet.create({
   bannerContainer: {
     width: "100%",
     height: 180,
-    backgroundColor: "#111116",
+    backgroundColor: colors.surface,
     overflow: "hidden",
   },
   bannerImage: {
@@ -236,10 +242,10 @@ const styles = StyleSheet.create({
     height: 135,
     borderRadius: 14,
     borderWidth: 3,
-    borderColor: "#0a0a0f",
-    backgroundColor: "#181820",
+    borderColor: colors.background,
+    backgroundColor: colors.surfaceElevated,
     overflow: "hidden",
-    shadowColor: "#000",
+    shadowColor: colors.pureBlack,
     shadowOpacity: 0.45,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
@@ -263,7 +269,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   titleText: {
-    color: "#ffffff",
+    color: colors.pureWhite,
     fontSize: 20,
     fontWeight: "800",
     letterSpacing: -0.5,
@@ -280,15 +286,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.04)",
+    backgroundColor: colors.glass,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.06)",
+    borderColor: colors.border,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
   metaText: {
-    color: "#a1a1aa",
+    color: colors.textMuted,
     fontSize: 10,
     fontWeight: "600",
   },
@@ -304,11 +310,11 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.06)",
+    backgroundColor: colors.border,
     marginVertical: 18,
   },
   sectionTitle: {
-    color: "#a78bfa",
+    color: colors.primary,
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 1.5,
@@ -316,7 +322,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   overviewText: {
-    color: "#d1d5db",
+    color: colors.textMuted,
     fontSize: 13.5,
     lineHeight: 22,
     fontWeight: "400",
@@ -328,12 +334,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   tagBadge: {
-    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    backgroundColor: colors.glass,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.06)",
+    borderColor: colors.border,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8,
   },
-  tagText: { color: "#d1d5db", fontSize: 11, fontWeight: "500" },
+  tagText: { color: colors.textSubtle, fontSize: 11, fontWeight: "500" },
 });

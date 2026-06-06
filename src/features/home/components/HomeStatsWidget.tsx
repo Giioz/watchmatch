@@ -1,16 +1,21 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 interface HomeStatsWidgetProps {
   matchCount: number;
 }
 
 export default function HomeStatsWidget({ matchCount }: HomeStatsWidgetProps) {
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-        <Ionicons name="flame" size={14} color="#a78bfa" style={{ marginRight: 6 }} />
+        <Ionicons name="flame" size={14} color={colors.primary} style={{ marginRight: 6 }} />
         <Text style={styles.title}>Matches Found</Text>
       </View>
       <Text style={styles.count}>{matchCount}</Text>
@@ -18,9 +23,9 @@ export default function HomeStatsWidget({ matchCount }: HomeStatsWidgetProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
-    backgroundColor: '#1e1e2a',
+    backgroundColor: colors.surfaceElevated,
     marginHorizontal: 32,
     marginTop: 16,
     borderRadius: 12,
@@ -32,13 +37,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
   },
   title: {
-    color: '#a78bfa',
+    color: colors.primary,
     fontSize: 13,
     fontWeight: '600',
     marginBottom: 4,
   },
   count: {
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 24,
     fontWeight: '700',
   },

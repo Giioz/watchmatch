@@ -11,8 +11,12 @@ import { CreateRoomFilterField } from './CreateRoomFilterField';
 import { CreateRoomBottomSheet } from './CreateRoomBottomSheet';
 import { CreateRoomActions } from './CreateRoomActions';
 import { GENRES, IMDB_RATINGS, AGE_RATINGS } from '../constants/createRoom';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { ThemeColors } from '@/theme/colors';
 
 export function CreateRoomScreenContent() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const {
@@ -52,7 +56,7 @@ export function CreateRoomScreenContent() {
   ].filter(option => !activeFilters.includes(option.key as FilterType));
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-[#0a0a0f]">
+    <SafeAreaView edges={['top']} className="flex-1" style={{ backgroundColor: colors.background }}>
       <ScrollView 
         contentContainerStyle={{ paddingBottom: 160 }} 
         showsVerticalScrollIndicator={false}
@@ -64,16 +68,17 @@ export function CreateRoomScreenContent() {
 
           {/* Section Header */}
           <View className="flex-row items-center justify-between mb-4 mt-1">
-            <Text className="text-[10px] text-[#71717a] uppercase tracking-[2px] font-bold">
+            <Text className="text-[10px] uppercase tracking-[2px] font-bold" style={{ color: colors.textSubtle }}>
               PREFERENCE FILTERS
             </Text>
             {availableFilterOptions.length > 0 && activeFilters.length > 0 && (
               <TouchableOpacity
                 onPress={() => setShowAddFilterModal(true)}
                 activeOpacity={0.7}
-                className="w-8 h-8 rounded-full bg-[#13131c] border border-[#ffffff0a] items-center justify-center"
+                className="w-8 h-8 rounded-full border items-center justify-center"
+                style={{ backgroundColor: colors.surface, borderColor: colors.border }}
               >
-                <Ionicons name="add" size={16} color="#a78bfa" />
+                <Ionicons name="add" size={16} color={colors.primary} />
               </TouchableOpacity>
             )}
           </View>
@@ -83,15 +88,16 @@ export function CreateRoomScreenContent() {
             <TouchableOpacity
               onPress={() => setShowAddFilterModal(true)}
               activeOpacity={0.8}
-              className="bg-[#13131c]/40 p-6 rounded-2xl border border-dashed border-[#ffffff0a] mb-6 items-center justify-center"
+              className="p-6 rounded-2xl border border-dashed mb-6 items-center justify-center"
+              style={{ backgroundColor: colors.surfaceHighlight, borderColor: colors.border }}
             >
-              <View className="w-12 h-12 rounded-full bg-[#181825] border border-[#ffffff0a] items-center justify-center mb-3">
-                <Ionicons name="funnel-outline" size={20} color="#a78bfa" />
+              <View className="w-12 h-12 rounded-full border items-center justify-center mb-3" style={{ backgroundColor: colors.surfaceElevated, borderColor: colors.border }}>
+                <Ionicons name="funnel-outline" size={20} color={colors.primary} />
               </View>
-              <Text className="text-[#f1f0f8] text-[15px] font-bold tracking-tight text-center">
+              <Text className="text-[15px] font-bold tracking-tight text-center" style={{ color: colors.text }}>
                 No Filters Active
               </Text>
-              <Text className="text-[#71717a] text-[12px] text-center mt-1.5 max-w-[240px] leading-[18px]">
+              <Text className="text-[12px] text-center mt-1.5 max-w-[240px] leading-[18px]" style={{ color: colors.textSubtle }}>
                 You'll swipe on all available {contentType === 'movie' ? 'movies' : 'shows'}. Tap to narrow down your queue.
               </Text>
             </TouchableOpacity>
@@ -133,10 +139,11 @@ export function CreateRoomScreenContent() {
               <TouchableOpacity
                 onPress={() => setShowAddFilterModal(true)}
                 activeOpacity={0.78}
-                className="flex-row items-center bg-[#13131c] px-6 py-3 rounded-full border border-dashed border-[#ffffff12]"
+                className="flex-row items-center px-6 py-3 rounded-full border border-dashed"
+                style={{ backgroundColor: colors.surface, borderColor: colors.border }}
               >
-                <Ionicons name="add" size={16} color="#a78bfa" style={{ marginRight: 6 }} />
-                <Text className="text-[#c4b5fd] text-[13px] font-bold tracking-wide">
+                <Ionicons name="add" size={16} color={colors.primary} style={{ marginRight: 6 }} />
+                <Text className="text-[13px] font-bold tracking-wide" style={{ color: colors.primary }}>
                   Add Session Filter
                 </Text>
               </TouchableOpacity>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { TMDBMediaItem } from '@/types/movie';
-
+import { useAppTheme } from '@/theme/ThemeContext';
 interface MovieFilmStripProps {
   loading: boolean;
   movies: TMDBMediaItem[];
@@ -9,10 +9,12 @@ interface MovieFilmStripProps {
 }
 
 export default function MovieFilmStrip({ loading, movies, onSelectMovie }: MovieFilmStripProps) {
+  const { colors } = useAppTheme();
+
   if (loading) {
     return (
       <View style={{ height: 88, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="small" color="#7c3aed" />
+        <ActivityIndicator size="small" color={colors.primary} />
       </View>
     );
   }
@@ -30,8 +32,8 @@ export default function MovieFilmStrip({ loading, movies, onSelectMovie }: Movie
             onPress={() => onSelectMovie(movie)}
             style={{
               flexDirection: 'row', height: 88, borderRadius: 14,
-              backgroundColor: '#111115', borderWidth: 1,
-              borderColor: isMatch ? 'rgba(124,58,237,0.45)' : '#1f1f27',
+              backgroundColor: colors.surface, borderWidth: 1,
+              borderColor: isMatch ? colors.primary : colors.surfaceHighlight,
               overflow: 'hidden',
             }}
           >
@@ -41,20 +43,20 @@ export default function MovieFilmStrip({ loading, movies, onSelectMovie }: Movie
 
             <View style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 10, justifyContent: 'space-between' }}>
               <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                <Text numberOfLines={1} style={{ flex: 1, fontSize: 13, fontWeight: '600', color: '#e4e4e7' }}>{movie.title}</Text>
+                <Text numberOfLines={1} style={{ flex: 1, fontSize: 13, fontWeight: '600', color: colors.text }}>{movie.title}</Text>
                 {isMatch ? (
-                  <View style={{ backgroundColor: 'rgba(124,58,237,0.2)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.5)', borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 }}>
-                    <Text style={{ fontSize: 9, color: '#c4b5fd', fontWeight: '600', letterSpacing: 0.8 }}>✦ MATCH</Text>
+                  <View style={{ backgroundColor: colors.surfaceElevated, borderWidth: 1, borderColor: colors.primarySoft, borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 }}>
+                    <Text style={{ fontSize: 9, color: colors.primary, fontWeight: '600', letterSpacing: 0.8 }}>✦ MATCH</Text>
                   </View>
                 ) : (
-                  <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: dotColors[index] ?? '#52525b', marginTop: 3 }} />
+                  <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: dotColors[index] ?? colors.textMuted, marginTop: 3 }} />
                 )}
               </View>
-              <Text numberOfLines={2} style={{ fontSize: 11, color: '#52525b', lineHeight: 15, marginTop: 4 }}>{movie.overview}</Text>
+              <Text numberOfLines={2} style={{ fontSize: 11, color: colors.textMuted, lineHeight: 15, marginTop: 4 }}>{movie.overview}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
-                <Text style={{ fontSize: 10, color: '#c4b5fd', fontWeight: '500' }}>★ {movie.vote_average.toFixed(1)}</Text>
-                <View style={{ width: 2, height: 2, borderRadius: 1, backgroundColor: '#3f3f46' }} />
-                <Text style={{ fontSize: 10, color: '#3f3f46' }}>{(movie.release_date ?? '').slice(0, 4)}</Text>
+                <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '500' }}>★ {movie.vote_average.toFixed(1)}</Text>
+                <View style={{ width: 2, height: 2, borderRadius: 1, backgroundColor: colors.textSubtle }} />
+                <Text style={{ fontSize: 10, color: colors.textSubtle }}>{(movie.release_date ?? '').slice(0, 4)}</Text>
               </View>
             </View>
           </TouchableOpacity>

@@ -8,8 +8,14 @@ import { roomService } from "@/services/roomService";
 import RoomTopBar from "./RoomTopBar";
 import RoomParticipantsCard from "./RoomParticipantsCard";
 import RoomActionsPanel from "./RoomActionsPanel";
+import { useAppStyles } from '@/theme/useAppStyles';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { ThemeColors } from '@/theme/colors';
 
 export default function RoomScreenContent() {
+  const styles = useAppStyles(createStyles);
+  const { colors } = useAppTheme();
+
   const router = useRouter();
   const { code } = useLocalSearchParams<{ code: string }>();
   const roomCode = useMemo(() => (code ?? "").toUpperCase(), [code]);
@@ -149,7 +155,7 @@ export default function RoomScreenContent() {
 
       {loading ? (
         <View style={styles.centerBlock}>
-          <ActivityIndicator size="large" color="#7c3aed" />
+          <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>
             Joining room {roomCode || "----"}
           </Text>
@@ -206,7 +212,7 @@ export default function RoomScreenContent() {
                   }}
                   style={styles.shareButton}
                 >
-                  <Ionicons name="share-outline" size={18} color="#a78bfa" />
+                  <Ionicons name="share-outline" size={18} color={colors.primary} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -221,7 +227,7 @@ export default function RoomScreenContent() {
             {/* Bottom half: Session Info */}
             <View style={styles.ticketBottom}>
               <View style={styles.ticketBottomInfo}>
-                <Ionicons name="film-outline" size={15} color="#71717a" style={{ marginRight: 6 }} />
+                <Ionicons name="film-outline" size={15} color={colors.textSubtle} style={{ marginRight: 6 }} />
                 <Text style={styles.ticketBottomInfoText}>
                   {room?.content_type === "movie" ? "Movies Pool" : "TV Shows Pool"}
                 </Text>
@@ -269,17 +275,17 @@ export default function RoomScreenContent() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0a0a0f",
+    backgroundColor: colors.background,
   },
   orbTop: {
     position: "absolute",
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: "#7c3aed",
+    backgroundColor: colors.primary,
     opacity: 0.1,
     top: -90,
     right: -80,
@@ -289,7 +295,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: "#4f46e5",
+    backgroundColor: colors.primaryHover,
     opacity: 0.08,
     bottom: -70,
     left: -60,
@@ -302,14 +308,14 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 14,
-    color: "#71717a",
+    color: colors.textSubtle,
     fontSize: 12,
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 1.5,
   },
   errorText: {
-    color: "#fca5a5",
+    color: colors.danger,
     fontSize: 13,
     lineHeight: 19,
     textAlign: "center",
@@ -326,7 +332,7 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     fontSize: 10,
-    color: "#a78bfa",
+    color: colors.primary,
     fontWeight: "700",
     letterSpacing: 2,
     textTransform: "uppercase",
@@ -335,17 +341,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "800",
-    color: "#ffffff",
+    color: colors.text,
     letterSpacing: -0.5,
   },
   ticketCard: {
-    backgroundColor: "#13131c",
+    backgroundColor: colors.surface,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.04)",
+    borderColor: colors.border,
     overflow: "hidden",
     marginBottom: 24,
-    shadowColor: "#000000",
+    shadowColor: colors.pureBlack,
     shadowOpacity: 0.4,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 12 },
@@ -362,30 +368,30 @@ const styles = StyleSheet.create({
   },
   ticketLabel: {
     fontSize: 10,
-    color: "#71717a",
+    color: colors.textSubtle,
     fontWeight: "700",
     letterSpacing: 1.5,
   },
   statusBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(167, 139, 250, 0.1)",
+    backgroundColor: colors.primarySoft,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 99,
     borderWidth: 1,
-    borderColor: "rgba(167, 139, 250, 0.25)",
+    borderColor: colors.primaryHover,
   },
   statusBadgeDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: "#a78bfa",
+    backgroundColor: colors.primarySoft,
     marginRight: 8,
   },
   statusBadgeText: {
     fontSize: 10,
-    color: "#c4b5fd",
+    color: colors.primary,
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.5,
@@ -397,7 +403,7 @@ const styles = StyleSheet.create({
   },
   codeLabel: {
     fontSize: 11,
-    color: "#52525b",
+    color: colors.textMuted,
     fontWeight: "700",
     letterSpacing: 1,
     marginBottom: 4,
@@ -405,16 +411,16 @@ const styles = StyleSheet.create({
   codeText: {
     fontSize: 40,
     fontWeight: "900",
-    color: "#ffffff",
+    color: colors.text,
     letterSpacing: 6,
   },
   shareButton: {
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: "#1c1c28",
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.05)",
+    borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -429,30 +435,30 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#0a0a0f",
+    backgroundColor: colors.background,
     marginLeft: -12,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.04)",
+    borderColor: colors.border,
   },
   rightCutout: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#0a0a0f",
+    backgroundColor: colors.background,
     marginRight: -12,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.04)",
+    borderColor: colors.border,
   },
   dashedLine: {
     flex: 1,
     borderStyle: "dashed",
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.06)",
+    borderColor: colors.border,
     marginHorizontal: 4,
     height: 0,
   },
   ticketBottom: {
-    backgroundColor: "rgba(24, 24, 37, 0.45)",
+    backgroundColor: colors.surfaceHighlight,
     paddingHorizontal: 24,
     paddingVertical: 18,
     flexDirection: "row",
@@ -465,12 +471,12 @@ const styles = StyleSheet.create({
   },
   ticketBottomInfoText: {
     fontSize: 12,
-    color: "#8e8e9f",
+    color: colors.textMuted,
     fontWeight: "600",
   },
   ticketBottomSharePrompt: {
     fontSize: 11,
-    color: "#52525b",
+    color: colors.textMuted,
     fontWeight: "700",
     letterSpacing: 0.5,
   },
@@ -478,12 +484,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 16,
     borderRadius: 16,
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    backgroundColor: colors.dangerSoft,
     borderWidth: 1,
-    borderColor: "rgba(239, 68, 68, 0.2)",
+    borderColor: colors.danger,
   },
   warningText: {
-    color: "#fca5a5",
+    color: colors.danger,
     fontSize: 13,
     lineHeight: 19,
     textAlign: "center",

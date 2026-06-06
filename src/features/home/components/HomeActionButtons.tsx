@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 interface HomeActionButtonsProps {
   onCreateRoom: () => void;
   onJoinRoom: (code: string) => void;
@@ -15,6 +17,9 @@ export default function HomeActionButtons({
   onSignIn,
   showAuthPrompt,
 }: HomeActionButtonsProps) {
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   const [isJoining, setIsJoining] = useState(false);
   const [roomCode, setRoomCode] = useState('');
 
@@ -53,8 +58,8 @@ export default function HomeActionButtons({
             </View>
             <Text style={styles.cardTagHost}>HOST SESSION</Text>
           </View>
-          <Text style={styles.cardTitle}>Host a Match</Text>
-          <Text style={styles.cardDesc}>
+          <Text style={styles.hostCardTitle}>Host a Match</Text>
+          <Text style={styles.hostCardDesc}>
             Pick genres, invite your partner, and swipe to match.
           </Text>
         </TouchableOpacity>
@@ -77,7 +82,7 @@ export default function HomeActionButtons({
               >
                 <View style={styles.cardHeader}>
                   <View style={styles.iconCircleJoin}>
-                    <Ionicons name="keypad" size={20} color="#a78bfa" />
+                    <Ionicons name="keypad" size={20} color={colors.primary} />
                   </View>
                   <Text style={styles.cardTagJoin}>JOIN SESSION</Text>
                 </View>
@@ -94,7 +99,7 @@ export default function HomeActionButtons({
                     value={roomCode}
                     onChangeText={(t) => setRoomCode(t.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
                     placeholder="CODE"
-                    placeholderTextColor="#3f3f46"
+                    placeholderTextColor={colors.textMuted}
                     maxLength={4}
                     autoCapitalize="characters"
                     autoCorrect={false}
@@ -113,7 +118,7 @@ export default function HomeActionButtons({
                     <Ionicons
                       name="arrow-forward"
                       size={20}
-                      color={roomCode.length === 4 ? '#ffffff' : '#52525b'}
+                      color={roomCode.length === 4 ? colors.text : colors.textMuted}
                     />
                   </TouchableOpacity>
                 </View>
@@ -146,7 +151,7 @@ export default function HomeActionButtons({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     paddingHorizontal: 24,
     marginTop: 18,
@@ -158,13 +163,11 @@ const styles = StyleSheet.create({
   hostCard: {
     flex: 1,
     minHeight: 160,
-    backgroundColor: '#7c3aed',
+    backgroundColor: colors.primary,
     borderRadius: 22,
     padding: 22,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(167, 139, 250, 0.45)',
-    shadowColor: '#7c3aed',
+    shadowColor: colors.primary,
     shadowOpacity: 0.3,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
@@ -183,14 +186,13 @@ const styles = StyleSheet.create({
   joinCard: {
     flex: 1,
     minHeight: 160,
-    backgroundColor: 'rgba(21, 21, 28, 0.8)',
+    backgroundColor: colors.surfaceElevated,
     borderRadius: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.07)',
     shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
   },
   joinCardButton: {
     flex: 1,
@@ -218,11 +220,11 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(167, 139, 250, 0.12)',
+    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(167, 139, 250, 0.2)',
+    borderColor: 'rgba(236, 71, 71, 0.25)',
   },
   cardTagHost: {
     color: 'rgba(255, 255, 255, 0.8)',
@@ -231,20 +233,33 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   cardTagJoin: {
-    color: '#a78bfa',
+    color: colors.primary,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
   },
   cardTitle: {
-    color: '#ffffff',
+    color: colors.text,
     fontSize: 20,
     fontWeight: '800',
     letterSpacing: -0.5,
     marginBottom: 6,
   },
   cardDesc: {
-    color: 'rgba(244, 244, 245, 0.7)',
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '400',
+  },
+  hostCardTitle: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    marginBottom: 6,
+  },
+  hostCardDesc: {
+    color: 'rgba(255, 255, 255, 0.9)',
     fontSize: 12,
     lineHeight: 18,
     fontWeight: '400',
@@ -254,7 +269,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   inputTitle: {
-    color: '#a78bfa',
+    color: colors.primary,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1,
@@ -272,7 +287,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(10, 10, 15, 0.7)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.12)',
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 18,
     fontWeight: '700',
     textAlign: 'center',
@@ -288,17 +303,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   submitBtnActive: {
-    backgroundColor: '#7c3aed',
+    backgroundColor: colors.primary,
   },
   submitBtnDisabled: {
-    backgroundColor: '#27272a',
+    backgroundColor: colors.surfaceElevated,
   },
   cancelBtn: {
     marginTop: 12,
     paddingVertical: 4,
   },
   cancelText: {
-    color: '#52525b',
+    color: colors.textMuted,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
@@ -310,12 +325,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   authPromptText: {
-    color: '#52525b',
+    color: colors.textMuted,
     fontSize: 12,
     fontWeight: '500',
   },
   authLink: {
-    color: '#a78bfa',
+    color: colors.primary,
     fontWeight: '700',
   },
   orContainer: {
@@ -328,10 +343,10 @@ const styles = StyleSheet.create({
   orLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: colors.border,
   },
   orText: {
-    color: '#71717a',
+    color: colors.textMuted,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 2,

@@ -1,5 +1,8 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useAppTheme } from '@/theme/ThemeContext';
+import { useAppStyles } from '@/theme/useAppStyles';
+import { ThemeColors } from '@/theme/colors';
 
 interface ProfileStatsProps {
   matchCount?: number;
@@ -12,6 +15,9 @@ export default function ProfileStats({
   roomCount = 0,
   loading = false,
 }: ProfileStatsProps) {
+  const { colors } = useAppTheme();
+  const styles = useAppStyles(createStyles);
+
   const statsList = [
     { label: 'Matches', value: loading ? '...' : String(matchCount) },
     { label: 'Rooms', value: loading ? '...' : String(roomCount) },
@@ -23,7 +29,7 @@ export default function ProfileStats({
       {statsList.map((stat) => (
         <View key={stat.label} style={styles.stat}>
           {loading && stat.value === '...' ? (
-            <ActivityIndicator size="small" color="#c4b5fd" style={styles.loader} />
+            <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />
           ) : (
             <Text style={styles.value}>{stat.value}</Text>
           )}
@@ -34,7 +40,7 @@ export default function ProfileStats({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     marginHorizontal: 24,
     marginBottom: 18,
@@ -46,13 +52,13 @@ const styles = StyleSheet.create({
     minHeight: 78,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#27272a',
-    backgroundColor: '#111115',
+    borderColor: colors.surfaceHighlight,
+    backgroundColor: colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
   },
   value: {
-    color: '#f4f4f5',
+    color: colors.text,
     fontSize: 20,
     fontWeight: '800',
     marginBottom: 5,
@@ -62,7 +68,7 @@ const styles = StyleSheet.create({
     height: 25,
   },
   label: {
-    color: '#71717a',
+    color: colors.textMuted,
     fontSize: 10,
     fontWeight: '600',
     letterSpacing: 1.5,
