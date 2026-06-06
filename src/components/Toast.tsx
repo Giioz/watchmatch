@@ -49,10 +49,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
+  const insets = useSafeAreaInsets();
+
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <View style={styles.toastContainer} pointerEvents="box-none">
+      <View style={[styles.toastContainer, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
         {toasts.map(toast => (
           <ToastItem key={toast.id} toast={toast} onDismiss={() => removeToast(toast.id)} />
         ))}
@@ -63,8 +65,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 function ToastItem({ toast, onDismiss }: { toast: ActiveToast; onDismiss: () => void }) {
   const { colors } = useAppTheme();
-  const insets = useSafeAreaInsets();
-  const translateY = useRef(new Animated.Value(-100)).current;
+  const translateY = useRef(new Animated.Value(-20)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const duration = toast.duration ?? 2200;
 
@@ -101,11 +102,10 @@ function ToastItem({ toast, onDismiss }: { toast: ActiveToast; onDismiss: () => 
       }),
     ]).start();
 
-    // Auto dismiss
-    const timer = setTimeout(() => {
+      const timer = setTimeout(() => {
       Animated.parallel([
         Animated.timing(translateY, {
-          toValue: -100,
+          toValue: -20,
           duration: 250,
           useNativeDriver: true,
         }),
@@ -118,7 +118,7 @@ function ToastItem({ toast, onDismiss }: { toast: ActiveToast; onDismiss: () => 
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [translateY, opacity, duration, onDismiss]);
+  }, [translateY, opacity, duration]); // Removed onDismiss from dependencies to prevent timer reset
 
   return (
     <Animated.View
@@ -128,7 +128,7 @@ function ToastItem({ toast, onDismiss }: { toast: ActiveToast; onDismiss: () => 
           backgroundColor: config.bg,
           transform: [{ translateY }],
           opacity,
-          marginTop: insets.top + 8,
+          marginBottom: 8,
         },
       ]}
     >

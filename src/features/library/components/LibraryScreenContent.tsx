@@ -25,7 +25,7 @@ import { useToast } from '@/components/Toast';
 type Tab = 'watchlist' | 'watched';
 
 export const LibraryScreenContent = () => {
-  const { libraryMovies, isLoading, refreshLibrary, updateWatchStatus, removeWatchStatus } = useLibrary();
+  const { libraryMovies, isLoading, refreshLibrary, updateWatchStatus, removeWatchStatus, removeFromLibrary } = useLibrary();
   const [activeTab, setActiveTab] = useState<Tab>('watchlist');
   const [selectedMovie, setSelectedMovie] = useState<LibraryMovie | null>(null);
   const [movieDetails, setMovieDetails] = useState<TMDBMediaItem | null>(null);
@@ -54,7 +54,7 @@ export const LibraryScreenContent = () => {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refreshLibrary();
+    await refreshLibrary(true);
     setRefreshing(false);
   }, [refreshLibrary]);
 
@@ -111,6 +111,16 @@ export const LibraryScreenContent = () => {
     });
   }, [removeWatchStatus, showToast]);
 
+  const handleRemoveFromWatchlist = useCallback(async (movie: LibraryMovie) => {
+    const movieTitle = movie.movie.title || movie.movie.name || 'Movie';
+    await removeFromLibrary(movie.movie.id);
+    showToast({
+      message: `"${movieTitle}" removed from library`,
+      type: 'info',
+      icon: 'trash-outline',
+    });
+  }, [removeFromLibrary, showToast]);
+
   const tabs: { key: Tab; label: string; count: number; icon: string }[] = [
     { key: 'watchlist', label: 'Watchlist', count: watchlistMovies.length, icon: 'bookmark-outline' },
     { key: 'watched', label: 'Watched', count: watchedMovies.length, icon: 'checkmark-circle-outline' },
@@ -123,9 +133,10 @@ export const LibraryScreenContent = () => {
       onPressProgress={() => setSelectedMovie(item)}
       onMarkWatched={() => handleMarkWatched(item)}
       onUnmarkWatched={() => handleUnmarkWatched(item)}
+      onRemoveWatchlist={() => handleRemoveFromWatchlist(item)}
       isWatchedTab={activeTab === 'watched'}
     />
-  ), [activeTab, handleMarkWatched, handleUnmarkWatched]);
+  ), [activeTab, handleMarkWatched, handleUnmarkWatched, handleRemoveFromWatchlist]);
 
   const keyExtractor = useCallback((item: LibraryMovie) => item.movie.id.toString(), []);
 
@@ -326,6 +337,7 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   },
   listContent: {
     paddingHorizontal: 24,
+    paddingTop: 14,
   },
   centerBlock: {
     flex: 1,

@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { LibraryMovie } from '@/types/library';
 import { useAppTheme } from '@/theme/ThemeContext';
 import { useAppStyles } from '@/theme/useAppStyles';
 import { ThemeColors } from '@/theme/colors';
+import { movieService } from '@/services/tmdbApi';
 
 interface LibraryMovieCardProps {
   movie: LibraryMovie;
@@ -19,6 +20,7 @@ interface LibraryMovieCardProps {
   onPressProgress: () => void;
   onMarkWatched: () => void;
   onUnmarkWatched: () => void;
+  onRemoveWatchlist: () => void;
   isWatchedTab: boolean;
 }
 
@@ -30,6 +32,7 @@ const LibraryMovieCardInner: React.FC<LibraryMovieCardProps> = ({
   onPressProgress,
   onMarkWatched,
   onUnmarkWatched,
+  onRemoveWatchlist,
   isWatchedTab,
 }) => {
   const { colors } = useAppTheme();
@@ -46,6 +49,25 @@ const LibraryMovieCardInner: React.FC<LibraryMovieCardProps> = ({
   const status = movie.watchStatus?.status || 'unwatched';
   const isInProgress = status === 'in_progress';
   const progressMins = movie.watchStatus?.progress ?? 0;
+
+  const [runtime, setRuntime] = useState<number | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    movieService.getMovieDetails(movie.movie.id).then(details => {
+      if (isMounted && details?.runtime) {
+        setRuntime(details.runtime);
+      }
+    });
+    return () => { isMounted = false; };
+  }, [movie.movie.id]);
+
+  const formatTime = (mins: number) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (h === 0) return `${m}m`;
+    return `${h}h ${m}m`;
+  };
 
   const triggerSpring = useCallback((animValue: Animated.Value) => {
     Animated.sequence([
@@ -113,6 +135,13 @@ const LibraryMovieCardInner: React.FC<LibraryMovieCardProps> = ({
         },
       ]}
     >
+      {/* Liked Badge: Half inside, half outside */}
+      {movie.isLiked && (
+        <View style={styles.likedBadge}>
+          <Ionicons name="heart" size={24} color={colors.primary} />
+        </View>
+      )}
+
       <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
         {/* Poster */}
         <View style={styles.posterWrap}>
@@ -140,6 +169,12 @@ const LibraryMovieCardInner: React.FC<LibraryMovieCardProps> = ({
                 <View style={styles.metaBadge}>
                   <Ionicons name="calendar-outline" size={10} color={colors.textSubtle} />
                   <Text style={styles.metaText}>{year}</Text>
+                </View>
+              ) : null}
+              {runtime ? (
+                <View style={styles.metaBadge}>
+                  <Ionicons name="time-outline" size={10} color={colors.textSubtle} />
+                  <Text style={styles.metaText}>{formatTime(runtime)}</Text>
                 </View>
               ) : null}
               {vote_average ? (
@@ -193,6 +228,17 @@ const LibraryMovieCardInner: React.FC<LibraryMovieCardProps> = ({
                 {isWatchedTab ? 'Undo' : 'Watched'}
               </Text>
             </TouchableOpacity>
+
+            {/* Remove from Watchlist Button */}
+            {movie.isWatchlist && !isWatchedTab && (
+              <TouchableOpacity
+                style={styles.actionBtnTrash}
+                onPress={onRemoveWatchlist}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="trash-outline" size={16} color={colors.danger} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </TouchableOpacity>
@@ -206,6 +252,8 @@ export const LibraryMovieCard = React.memo(LibraryMovieCardInner, (prev, next) =
     prev.movie.movie.id === next.movie.movie.id &&
     prev.movie.watchStatus?.status === next.movie.watchStatus?.status &&
     prev.movie.watchStatus?.progress === next.movie.watchStatus?.progress &&
+    prev.movie.isLiked === next.movie.isLiked &&
+    prev.movie.isWatchlist === next.movie.isWatchlist &&
     prev.isWatchedTab === next.isWatchedTab
   );
 });
@@ -219,11 +267,20 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 0 },
     elevation: 4,
-    overflow: 'hidden',
+    // overflow: 'visible' allows the half-outside badge to show
+    overflow: 'visible',
+  },
+  likedBadge: {
+    position: 'absolute',
+    top: -6,
+    left: -6,
+    zIndex: 10,
   },
   card: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
+    borderRadius: 20,
+    overflow: 'hidden',
   },
   posterWrap: {
     width: 100,
@@ -317,6 +374,15 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   actionBtnWatched: {
     backgroundColor: colors.successSoft,
     borderColor: colors.success,
+  },
+  actionBtnTrash: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: colors.dangerSoft,
+    borderWidth: 1,
+    borderColor: colors.danger,
   },
   actionBtnText: {
     fontSize: 11,

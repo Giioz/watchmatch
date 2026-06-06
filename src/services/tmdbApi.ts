@@ -74,10 +74,21 @@ export const movieService = {
     return await fetchFromTMDB<TMDBDiscoverResponse>(`/movie/${movieId}/recommendations`);
   },
 
-  /**
-   * ფილმის დეტალების წამოღება (მაგალითად, ხანგრძლივობისთვის)
-   */
   getMovieDetails: async (movieId: number): Promise<any | null> => {
     return await fetchFromTMDB<any>(`/movie/${movieId}`);
+  },
+
+  /**
+   * ფილმის ან სერიალის საყურებელი პლატფორმების წამოღება (Watch Providers)
+   */
+  getWatchProviders: async (movieId: number, type: 'movie' | 'tv' = 'movie'): Promise<any | null> => {
+    return await fetchFromTMDB<any>(`/${type}/${movieId}/watch/providers`);
+  },
+
+  /**
+   * ფილმის ვიდეოებისა და ტრეილერების სიის წამოღება
+   */
+  getMovieVideos: async (movieId: number, type: 'movie' | 'tv' = 'movie'): Promise<any | null> => {
+    return await fetchFromTMDB<any>(`/${type}/${movieId}/videos`);
   }
 };

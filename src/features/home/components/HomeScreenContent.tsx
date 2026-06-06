@@ -22,12 +22,16 @@ import { useHomeAnimations } from '../hooks/useHomeAnimations';
 import HomeActionButtons from './HomeActionButtons';
 import HomeProfileButton from './HomeProfileButton';
 import TodaysPicks from './TodaysPicks';
+import RecentMatchesScroll from './RecentMatchesScroll';
 import HomeMovieBottomSheet from './HomeMovieBottomSheet';
+import { useHomeDashboard } from '../hooks/useHomeDashboard';
+import { RoomMovie } from '@/types/database';
 import { TMDBMediaItem } from '@/types/movie';
 
 export default function HomeScreenContent() {
   const router = useRouter();
   const { user, loading: loadingAuth } = useAuthSession();
+  const { recentMatches, statsLoading } = useHomeDashboard();
 
   const [selectedMovie, setSelectedMovie] = useState<TMDBMediaItem | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -87,7 +91,7 @@ export default function HomeScreenContent() {
             {/* Welcoming Header Section */}
             <Animated.View style={[styles.welcomeSection, { opacity: headerAnim }]}>
               <Text style={styles.welcomePrompt}>
-                KRISTI RAS VUYUROT?
+                What are we watching tonight?
               </Text>
               <Text style={styles.welcomeSubtext}>
                 No debates. Swipe genres, invite a partner, and agree on a movie in seconds.
@@ -111,6 +115,31 @@ export default function HomeScreenContent() {
                   userId={user.id}
                   onPressMovie={(movie) => {
                     setSelectedMovie(movie);
+                    setIsModalVisible(true);
+                  }}
+                />
+              </Animated.View>
+            )}
+
+            {/* Recent Matches section */}
+            {user && recentMatches.length > 0 && (
+              <Animated.View style={{ opacity: cardsAnim, marginTop: 28 }}>
+                <Text style={styles.sectionTitle}>Recent Matches</Text>
+                <RecentMatchesScroll
+                  recentMatches={recentMatches}
+                  loading={statsLoading}
+                  onPressMovie={(movie) => {
+                    setSelectedMovie({
+                      id: movie.tmdb_id,
+                      title: movie.title,
+                      poster_path: movie.poster_path,
+                      backdrop_path: movie.backdrop_path,
+                      overview: movie.overview ?? '',
+                      vote_average: movie.vote_average ?? 0,
+                      release_date: movie.release_date ?? '',
+                      popularity: 0,
+                      genre_ids: movie.genre_ids ?? [],
+                    });
                     setIsModalVisible(true);
                   }}
                 />

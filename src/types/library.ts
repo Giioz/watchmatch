@@ -13,5 +13,7 @@ export interface LibraryMovie {
   movie: TMDBMediaItem;
   addedAt: string; // ISO string
   source: 'watchlist' | 'liked';
+  isLiked?: boolean;
+  isWatchlist?: boolean;
   watchStatus?: MovieWatchStatus;
 }

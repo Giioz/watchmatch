@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Image,
   Modal,
@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TMDBMediaItem } from "@/types/movie";
+import { movieService } from "@/services/tmdbApi";
 import { useAppStyles } from '@/theme/useAppStyles';
 import { useAppTheme } from '@/theme/ThemeContext';
 import { ThemeColors } from '@/theme/colors';
@@ -47,6 +48,13 @@ const GENRE_MAP: Record<number, string> = {
   10768: 'War & Politics',
 };
 
+const formatTime = (mins: number) => {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m}m`;
+  return `${h}h ${m}m`;
+};
+
 interface MovieDetailsModalProps {
   visible: boolean;
   movie: TMDBMediaItem | null;
@@ -59,7 +67,40 @@ export default function MovieDetailsModal({
   onClose,
 }: MovieDetailsModalProps) {
   const styles = useAppStyles(createStyles);
-  const { colors } = useAppTheme();
+  const { colors, isDark } = useAppTheme();
+
+  const [runtime, setRuntime] = useState<number | null>(null);
+  const [providers, setProviders] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!visible || !movie) {
+      setRuntime(null);
+      setProviders([]);
+      return;
+    }
+
+    let active = true;
+    const mediaType = (movie.release_date || movie.title) ? 'movie' : 'tv';
+
+    movieService.getMovieDetails(movie.id).then((details) => {
+      if (active && details?.runtime) {
+        setRuntime(details.runtime);
+      }
+    });
+
+    movieService.getWatchProviders(movie.id, mediaType).then((data) => {
+      if (active && data?.results) {
+        const countryResults = data.results.US || data.results.GB || Object.values(data.results)[0];
+        if (countryResults?.flatrate) {
+          setProviders(countryResults.flatrate.slice(0, 4));
+        }
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [movie?.id, visible]);
 
   if (!movie) return null;
 
@@ -145,6 +186,13 @@ export default function MovieDetailsModal({
                   </View>
                 ) : null}
 
+                {runtime ? (
+                  <View style={styles.metaBadge}>
+                    <Ionicons name="time-outline" size={11} color={colors.textMuted} />
+                    <Text style={styles.metaText}>{formatTime(runtime)}</Text>
+                  </View>
+                ) : null}
+
                 {movie.popularity ? (
                   <View style={styles.metaBadge}>
                     <Ionicons name="trending-up-outline" size={11} color="#38bdf8" />
@@ -161,6 +209,26 @@ export default function MovieDetailsModal({
             <Text style={styles.overviewText}>
               {movie.overview || "No storyline description is currently available for this title."}
             </Text>
+
+            {/* Watch Providers Section */}
+            {providers.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, { marginTop: 28 }]}>
+                  Where to Watch
+                </Text>
+                <View style={styles.providersContainer}>
+                  {providers.map((p) => (
+                    <View key={p.provider_id} style={styles.providerBadge}>
+                      <Image
+                        source={{ uri: `https://image.tmdb.org/t/p/w92${p.logo_path}` }}
+                        style={styles.providerLogo}
+                      />
+                      <Text style={styles.providerName}>{p.provider_name}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
 
             {/* Dynamic Genres Section */}
             {genres.length > 0 && (
@@ -269,7 +337,7 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     justifyContent: "center",
   },
   titleText: {
-    color: colors.pureWhite,
+    color: colors.text, // Fixed from colors.pureWhite to use dynamic colors.text for light mode support!
     fontSize: 20,
     fontWeight: "800",
     letterSpacing: -0.5,
@@ -342,4 +410,32 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     borderRadius: 8,
   },
   tagText: { color: colors.textSubtle, fontSize: 11, fontWeight: "500" },
+  providersContainer: {
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap",
+    marginTop: 4,
+    marginBottom: 20,
+  },
+  providerBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.glass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    gap: 8,
+  },
+  providerLogo: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+  },
+  providerName: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: "600",
+  },
 });

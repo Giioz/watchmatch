@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
-import { StyleSheet, View, TouchableOpacity, Text, Animated, Dimensions } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, Animated, Dimensions, DeviceEventEmitter } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +16,7 @@ const INDICATOR_WIDTH = 44;
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const translateAnim = useRef(new Animated.Value(0)).current; // For hiding/showing
   const activeIndex = state.index;
   const { colors, isDark } = useAppTheme();
   const styles = useAppStyles(createStyles);
@@ -31,8 +32,20 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     }).start();
   }, [activeIndex]);
 
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener('TOGGLE_TAB_BAR', (visible) => {
+      Animated.spring(translateAnim, {
+        toValue: visible ? 0 : tabBarHeight + 20, // move down completely
+        useNativeDriver: true,
+        tension: 100,
+        friction: 12,
+      }).start();
+    });
+    return () => subscription.remove();
+  }, [tabBarHeight]);
+
   return (
-    <View style={[styles.tabBarContainer, { height: tabBarHeight, paddingBottom: insets.bottom }]}>
+    <Animated.View style={[styles.tabBarContainer, { height: tabBarHeight, paddingBottom: insets.bottom, transform: [{ translateY: translateAnim }] }]}>
       <BlurView tint={isDark ? "dark" : "light"} intensity={85} style={StyleSheet.absoluteFill}>
         <View style={styles.glassOverlay} />
       </BlurView>
@@ -76,8 +89,8 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             iconName = isFocused ? 'analytics' : 'analytics-outline';
             label = 'DNA';
           } else if (route.name === 'matches') {
-            iconName = isFocused ? 'heart' : 'heart-outline';
-            label = 'Matches';
+            iconName = isFocused ? 'compass' : 'compass-outline';
+            label = 'Discover';
           } else if (route.name === 'library') {
             iconName = isFocused ? 'library' : 'library-outline';
             label = 'Library';
@@ -104,7 +117,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           );
         })}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -118,7 +131,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Home' }} />
       <Tabs.Screen name="stats" options={{ title: 'DNA' }} />
-      <Tabs.Screen name="matches" options={{ title: 'Matches' }} />
+      <Tabs.Screen name="matches" options={{ title: 'Discover' }} />
       <Tabs.Screen name="library" options={{ title: 'Library' }} />
     </Tabs>
   );
